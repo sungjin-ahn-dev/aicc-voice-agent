@@ -1,20 +1,11 @@
-"""AICC (CLAW OPS) 전화 에이전트 런타임.
+"""AICC(CLAW OPS) 전화 에이전트 런타임. 원래 모놀리스 main.py 안에 뭉쳐 있던 걸 떼어냈다.
 
-원본 모놀리스 `app/main.py` 의 AICC Agent 블록(약 515~1082줄)을 독립 함수로 추출했다.
-- 하드코딩된 API 키 setdefault 제거 → .env / 환경변수에서 로드
-- 하드코딩 녹음 경로 → AICC_RECORDING_PATH 환경변수 또는 데이터 루트 기반
-- 발신번호→Slack 매핑(CALLER_SLACK_MAP)은 운영팀이 편집하는 상수로 분리
+070 수신 → Gemini Live 응답, 운영시간/휴무 게이트 + 자동 콜백 큐잉, 무음 감지(G02·G03
+자동 발화 후 hangup), 키워드·NLU 실패 임계값 기반 상담원 자동 전환, 통화 종료 시
+녹음 저장 → 분류/정제 → Slack → 자동 SMS.
 
-기능:
-- 070 전화 수신 → Gemini Live 응답
-- 운영시간/휴무 게이트, 자동 콜백 큐잉
-- 무음 감지(G02/G03 자동 발화 + hangup)
-- 전환/불만 키워드 + NLU 실패 임계값 기반 자동 상담원 전환
-- 통화 종료 시: 녹음 저장 → 분류/정제 → Slack 전송 → 자동 SMS
-
-사용:
-    task = await start_aicc_agent()
-    # task 는 agent.serve() 코루틴의 asyncio.Task
+떼어내면서 하드코딩된 API 키/녹음 경로는 .env·환경변수로 뺐고, 발신번호→Slack 매핑은
+운영팀이 직접 손대는 상수(CALLER_SLACK_MAP)로 분리했다.
 """
 from __future__ import annotations
 
@@ -73,11 +64,10 @@ async def start_aicc_agent() -> "asyncio.Task | None":
         rec_dir = _recording_dir()
         os.makedirs(rec_dir, exist_ok=True)
 
-        # CS팀 어드민이 편집하는 설정 파일 (없으면 기본값으로 시드)
+        # 어드민 설정 파일 없으면 기본값으로 시드
         aicc_cfg.ensure_seed()
-        # 콜 로그 DB 초기화 (테이블 + 인덱스 생성)
         aicc_db.init_db()
-        # aicc_scenario_sample.xlsx에서 G-code 멘트 + 46 FAQ 로드
+        # xlsx 시나리오에서 G-code 멘트 + FAQ 로드
         faq_text = aicc_scenario.get_faq_text()
         _initial_config = aicc_cfg.load_config()
         system_prompt = aicc_cfg.build_system_prompt(_initial_config, faq_text=faq_text)

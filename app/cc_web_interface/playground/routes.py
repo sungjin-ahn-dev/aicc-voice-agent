@@ -1,14 +1,7 @@
-"""AICC Playground 라우트.
+"""AICC Playground — 로컬에서 파이썬 서버만 켜면 대시보드와 같이 뜨는 "전화 실험실".
 
-로컬에서 파이썬 서버만 켜면 대시보드와 함께 활성화되는 "전화 실험실".
-
-- GET  /playground            → playground.html
-- GET  /playground/status     → 서버/에이전트/키 상태 (페이지가 폴링)
-- POST /playground/call       → 입력한 번호로 실제 아웃바운드(발신) 테스트
-- GET  /playground/recent     → 최근 통화 목록 (인바운드/아웃바운드 공통)
-
-발신은 기존 callback_dispatcher(시작 시 에이전트가 등록됨)를 재사용한다.
-키(CLAWOPS/GOOGLE)가 없으면 에이전트가 비활성이므로, 그 사실을 그대로 안내한다.
+발신은 기존 callback_dispatcher(에이전트가 시작 시 등록)를 재사용한다.
+키(CLAWOPS/GOOGLE)가 없으면 에이전트가 비활성이라, 그 사실을 페이지에 그대로 안내.
 """
 from __future__ import annotations
 

@@ -1,22 +1,5 @@
-"""AICC 관리자 대시보드 FastAPI 라우트.
-
-설정 관리:
-- GET  /admin/aicc                    → admin_aicc.html
-- GET  /admin/aicc/config             → 현재 JSON 설정
-- PUT  /admin/aicc/config             → 설정 저장 + 핫스왑
-- GET  /admin/aicc/status             → 에이전트 상태
-
-콜 로그 / 분석:
-- GET  /admin/aicc/calls              → 통화 목록 (필터/페이지네이션)
-- GET  /admin/aicc/calls/{id}         → 통화 상세
-- GET  /admin/aicc/calls/{id}/recording → 녹음 wav 다운로드
-- POST /admin/aicc/calls/{id}/reclassify → 재분류
-- POST /admin/aicc/calls/{id}/resend-sms → SMS 재발송
-- GET  /admin/aicc/analytics?days=N   → 집계
-- GET  /admin/aicc/data-integrity     → 데이터 정합성
-- POST /admin/aicc/reclassify-all     → 미분류 일괄 재분류
-- GET  /admin/aicc/sms/preview        → 현재 설정 기준 SMS 본문 미리보기
-"""
+"""AICC 관리자 대시보드 라우트 — 설정 관리, 콜 로그/분석, SMS·알림톡 발송, 콜백 큐.
+엔드포인트는 아래 라우트 데코레이터 참고."""
 
 from __future__ import annotations
 

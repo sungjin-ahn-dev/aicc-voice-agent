@@ -85,13 +85,7 @@ async def _wait_session(session: Any, call_id: str, phone: str) -> None:
 
 
 async def execute_callback(cb_id: int, prompt: Optional[str] = None) -> dict:
-    """콜백 큐 항목을 실제로 발신.
-
-    1. DB에서 콜백 정보 로드
-    2. 상태 → in_progress + retry_count++ + last_attempt_at
-    3. outbound 발신
-    4. 결과에 따라 상태 업데이트
-    """
+    """콜백 큐 항목 하나를 실제로 발신하고 결과에 맞춰 상태를 갱신한다."""
     cb = callback_db.get_callback(cb_id)
     if not cb:
         return {"status": "error", "reason": "callback_not_found"}

@@ -1,15 +1,8 @@
 """AICC 콜백 요청 큐 DB.
 
-상담 실패/차단/짧은 통화 등으로 다시 연락이 필요한 고객의 대기열 관리.
-
-설계:
-- SQLite (call_log_db.py와 동일 base dir)
-- 우선순위: 1(낮음) ~ 5(매우 긴급). 기본 3.
-- 상태: pending / in_progress / done / failed / cancelled
-- soft delete: status='cancelled'로만 표시. 물리 삭제 X
-- 재시도: retry_count / max_retries 관리, last_attempt_at 기록
-
-DB 위치: $FILESYSTEM_BASE_DIR/db/callback_queue.db
+상담 실패/차단/짧은 통화 등으로 다시 연락해야 하는 고객 대기열. call_log_db와 같은 base dir.
+우선순위 1(낮음)~5(긴급, 기본 3), 상태는 pending/in_progress/done/failed/cancelled.
+취소는 물리 삭제 안 하고 status='cancelled'로만 두고, 재시도는 retry_count/max_retries로 관리.
 """
 from __future__ import annotations
 

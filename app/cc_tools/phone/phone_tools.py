@@ -19,7 +19,7 @@ if os.path.exists(_eco_config):
     load_dotenv(_eco_config, override=False)
 
 if not os.environ.get("CLAWOPS_API_KEY"):
-    logger.warning("[PHONE] CLAWOPS_API_KEY ��경변수가 설정되지 않았습니다")
+    logger.warning("[PHONE] CLAWOPS_API_KEY 환경변수가 설정되지 않았습니다")
 
 
 def _load_faq() -> str:

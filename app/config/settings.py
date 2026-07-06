@@ -1,16 +1,5 @@
-"""AICC 독립 실행용 최소 설정.
-
-원본 모놀리스 `app/config/settings.py`에서 AICC telephony 코드가 실제로 사용하는
-필드만 추출했다. 값은 환경변수 또는 repo 루트의 `.env` 파일에서 읽는다.
-
-원본에서 사용 확인된 필드:
-- FILESYSTEM_BASE_DIR  : DB·녹음 저장 루트 (call_log_db, config)
-- SLACK_BOT_TOKEN      : 통화 요약/녹음 Slack 전송
-- CLAWOPS_API_KEY      : ClawOps 인증 (routes_clawops, sms_sender, 런타임)
-- CLAWOPS_ACCOUNT_ID   : ClawOps 계정
-- CLAWOPS_WEBHOOK_SECRET : ClawOps 웹훅 서명 검증
-- GOOGLE_API_KEY       : Gemini Live (런타임/분류기에서 os.environ로도 읽음)
-"""
+"""AICC 전용 설정. 모놀리스 settings에서 telephony가 실제로 쓰는 필드만 떼어왔다.
+값은 환경변수 / repo 루트 .env 에서 로드."""
 from __future__ import annotations
 
 from functools import lru_cache

@@ -1,13 +1,9 @@
-"""AICC 통화 로그 DB.
+"""AICC 통화 로그 DB (SQLite).
 
-설계 원칙 (클라우드 이전 용이):
-- SQLite-specific 문법 최소화 (PostgreSQL/MySQL로 옮길 때 변경 최소)
-- 모든 timestamp는 ISO 8601 UTC TEXT (TIMESTAMPTZ로 자동 호환)
-- 녹음 파일은 상대경로만 저장 (S3로 옮길 때 base만 갈아끼우면 됨)
-- 인덱스: 자주 필터/정렬되는 컬럼만
+나중에 PostgreSQL/S3로 옮길 걸 감안해서 SQLite 전용 문법은 최대한 피했다.
+timestamp는 전부 ISO 8601 UTC TEXT(→ TIMESTAMPTZ 호환), 녹음은 상대경로만 저장(→ base만 교체).
 
-DB 위치: $FILESYSTEM_BASE_DIR/db/aicc_calls.db
-녹음 base: $FILESYSTEM_BASE_DIR/aicc_recordings/
+DB: $FILESYSTEM_BASE_DIR/db/aicc_calls.db, 녹음: $FILESYSTEM_BASE_DIR/aicc_recordings/
 """
 
 from __future__ import annotations

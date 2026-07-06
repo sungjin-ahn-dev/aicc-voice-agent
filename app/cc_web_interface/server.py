@@ -1,13 +1,5 @@
-"""AICC 독립 실행용 FastAPI 앱.
-
-원본 모놀리스 `server.py`에서 AICC telephony 관련 라우터만 포함하도록 재작성했다.
-(auth, slack handlers, CRM 등 모놀리스 본체 의존 라우터는 모두 제외)
-
-포함 라우터:
-- /clawops      : CLAW OPS 070 전화 웹훅 (routes_clawops)
-- /admin/aicc   : CS팀 관리 대시보드 (admin_aicc.routes)
-- /daemon/aicc-status : 간단 상태 점검
-"""
+"""AICC FastAPI 앱. 모놀리스 server.py에서 telephony 라우터(clawops/admin/playground)만
+남기고 추렸다. auth·slack·CRM 등 본체 의존 라우터는 뺐다."""
 from __future__ import annotations
 
 import logging

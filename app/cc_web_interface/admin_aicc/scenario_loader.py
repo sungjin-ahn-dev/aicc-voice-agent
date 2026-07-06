@@ -1,12 +1,7 @@
-"""AICC 시나리오 xlsx 로더.
+"""AICC 시나리오 xlsx 로더. 01_기본흐름 시트에서 G-code TTS 멘트를,
+02_FAQ 시트에서 Q&A를 뽑아 system_prompt 주입용 텍스트로 만든다.
 
-시나리오 xlsx 파일에서 다음을 추출:
-- 01_기본흐름_스크립트 → G-code별 정확한 TTS 멘트 dict
-- 02_FAQ_스크립트       → 46건 Q&A를 system_prompt 주입용 텍스트로
-
-검색 우선순위 (먼저 발견되는 것 사용):
-1. ~/.aicc/aicc_scenario.xlsx  (운영용 고정 경로)
-2. <project_root>/aicc_scenario_sample.xlsx  (개발 폴백 — 목업 샘플)
+파일은 운영용 ~/.aicc/aicc_scenario.xlsx 를 먼저 찾고, 없으면 repo의 sample xlsx로 폴백.
 """
 
 from __future__ import annotations

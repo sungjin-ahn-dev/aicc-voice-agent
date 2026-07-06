@@ -1,16 +1,10 @@
-"""AICC 통화 종료 후 자동 SMS 발송.
+"""통화 종료 후 자동 SMS 발송.
 
-설계 (dual backend):
-- 공급자: Solapi (우선) / CLAW OPS (폴백) — 어드민 config.sms.provider로 강제 지정 가능
-- "auto" 모드: SOLAPI_API_KEY/SECRET 있으면 Solapi, 없으면 CLAW OPS
-- 본문 합성: [header] + [요약 또는 no_content] + [footer]
-- 어드민 설정(config.sms.*) 로 ON/OFF, 멘트 편집, 차단 정책 제어
-- 발송 결과는 aicc_calls 테이블의 sms_* 컬럼에 기록
-- 010 발신자에게만 발송 (mobile_only 옵션, 070·1588 등 사업자 번호는 자동 skip)
+공급자는 auto 모드에서 Solapi 키 있으면 Solapi, 없으면 CLAW OPS를 쓴다(NCP도 지원).
+config.sms.provider 로 강제 지정 가능. 본문은 헤더 + 요약(or no_content) + 풋터로 합성하고,
+010 번호에만 보낸다(070·1588 등 사업자번호는 skip). 결과는 aicc_calls.sms_* 에 기록.
 
-배포 전 필수 (둘 중 하나):
-- [Solapi] SOLAPI_API_KEY / SOLAPI_API_SECRET / SOLAPI_SENDER 환경변수
-- [CLAW OPS] CLAWOPS_API_KEY / CLAWOPS_ACCOUNT_ID + 070-1234-5678 발신번호 사전등록
+주의: CLAW OPS 백엔드는 070 발신번호를 사전등록해둬야 실제로 나간다.
 """
 
 from __future__ import annotations
