@@ -1,0 +1,1958 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AICC 관리 — 070 AI 전화 상담</title>
+<style>
+:root {
+  --bg: #f5f7fa;
+  --card: #ffffff;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --success: #059669;
+  --danger: #dc2626;
+  --warn: #f59e0b;
+  --radius: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.55;
+  padding: 32px 16px 80px;
+}
+.container { max-width: 880px; margin: 0 auto; }
+header {
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  color: #fff;
+  padding: 22px 26px;
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+header h1 { font-size: 1.4rem; margin-bottom: 4px; }
+header .sub { font-size: 0.92rem; opacity: 0.9; }
+
+.toolbar {
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  padding: 14px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 18px;
+  z-index: 5;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.toolbar .status { font-size: 0.92rem; color: var(--muted); margin-right: auto; }
+.toolbar .status .dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--success); margin-right: 6px; vertical-align: middle;
+}
+button {
+  font: inherit; cursor: pointer; border: none; padding: 9px 18px; border-radius: 8px;
+  font-weight: 600; transition: 0.15s;
+}
+button.primary { background: var(--primary); color: #fff; }
+button.primary:hover { background: var(--primary-hover); }
+button.ghost { background: transparent; color: var(--primary); border: 1px solid var(--border); }
+button.ghost:hover { background: #f0f5ff; }
+button.danger { background: transparent; color: var(--danger); border: 1px solid #fecaca; padding: 5px 10px; font-size: 0.85rem; }
+button.danger:hover { background: #fef2f2; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+section.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 26px;
+  margin-bottom: 16px;
+}
+section.card h2 {
+  font-size: 1.05rem;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+section.card .desc {
+  font-size: 0.88rem;
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+.field { margin-bottom: 14px; }
+.field:last-child { margin-bottom: 0; }
+.field label:not(.toggle) { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.92rem; }
+.field .hint { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
+input[type="text"], input[type="number"], input[type="time"], input[type="date"], textarea {
+  width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 7px;
+  font: inherit; background: #fff; color: var(--text);
+}
+textarea { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.86rem; resize: vertical; min-height: 90px; }
+input:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+
+.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #eff6ff; color: var(--primary); padding: 5px 12px;
+  border-radius: 999px; font-size: 0.88rem;
+  border: 1px solid #dbeafe;
+}
+.tag button { background: transparent; color: var(--primary); padding: 0 4px; font-weight: 700; font-size: 1.05rem; line-height: 1; }
+.tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.tag-input-row { display: flex; gap: 6px; }
+.tag-input-row input { flex: 1; }
+
+.toggle {
+  display: inline-flex; align-items: center; cursor: pointer; user-select: none; gap: 10px;
+  font-weight: normal; margin-bottom: 0;
+}
+.toggle input { display: none; }
+.toggle .slider {
+  width: 42px; min-width: 42px; flex-shrink: 0;
+  height: 24px; background: #d1d5db; border-radius: 999px;
+  position: relative; transition: 0.18s; display: inline-block;
+}
+.toggle .slider::after {
+  content: ""; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px;
+  background: #fff; border-radius: 50%; transition: 0.18s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.toggle input:checked + .slider { background: var(--primary); }
+.toggle input:checked + .slider::after { left: 20px; }
+
+table.hours { width: 100%; border-collapse: collapse; }
+table.hours th, table.hours td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); font-weight: normal; }
+table.hours th { font-size: 0.82rem; color: var(--muted); }
+table.hours td input[type="time"] { width: 110px; padding: 6px 8px; }
+
+#snackbar {
+  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+  background: var(--text); color: #fff; padding: 12px 22px; border-radius: 999px;
+  font-size: 0.93rem; box-shadow: 0 4px 18px rgba(0,0,0,0.18);
+  opacity: 0; pointer-events: none; transition: 0.25s;
+  z-index: 100;
+}
+#snackbar.show { opacity: 1; }
+#snackbar.error { background: var(--danger); }
+.warn-banner {
+  background: #fef3c7; border: 1px solid #fcd34d; color: #92400e;
+  padding: 10px 14px; border-radius: 8px; font-size: 0.9rem; margin-bottom: 16px;
+  display: none;
+}
+.warn-banner.show { display: block; }
+.live-badge { font-size: 0.72rem; padding: 3px 9px; border-radius: 999px; font-weight: 600; vertical-align: middle; }
+.live-badge.instant { background: #d1fae5; color: #065f46; }
+.live-badge.swap { background: #fef3c7; color: #92400e; }
+
+@media (max-width: 600px) {
+  body { padding: 16px 8px 80px; }
+  section.card { padding: 16px 14px; }
+  table.hours td input[type="time"] { width: 90px; }
+}
+
+/* ---- 탭 네비 ---- */
+.tabs { display: flex; gap: 6px; margin-bottom: 16px; border-bottom: 2px solid var(--border); }
+.tabs button {
+  background: transparent; border: none; padding: 12px 22px;
+  font-size: 0.96rem; font-weight: 600; color: var(--muted);
+  border-bottom: 3px solid transparent; margin-bottom: -2px;
+  cursor: pointer; border-radius: 0;
+}
+.tabs button.active { color: var(--primary); border-bottom-color: var(--primary); }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* ---- 분석 KPI 카드 ---- */
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.kpi { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
+.kpi .label { font-size: 0.82rem; color: var(--muted); margin-bottom: 4px; }
+.kpi .value { font-size: 1.8rem; font-weight: 700; line-height: 1; }
+.kpi .sub { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+.kpi.warn .value { color: var(--warn); }
+.kpi.danger .value { color: var(--danger); }
+
+/* ---- CSS 막대그래프 ---- */
+.bar-chart { display: flex; flex-direction: column; gap: 8px; }
+.bar-row { display: grid; grid-template-columns: 110px 1fr 50px; align-items: center; gap: 10px; font-size: 0.88rem; }
+.bar-row .label { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-row .bar-track { background: #f0f3f7; border-radius: 999px; height: 18px; overflow: hidden; }
+.bar-row .bar-fill { background: var(--primary); height: 100%; transition: width 0.3s; }
+.bar-row .count { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* 일별 sparkline */
+.sparkline { display: flex; gap: 2px; align-items: flex-end; height: 60px; }
+.sparkline .bar { flex: 1; background: var(--primary); border-radius: 2px 2px 0 0; min-height: 2px; opacity: 0.85; }
+
+/* 데이터 정합성 패널 */
+.integrity-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.integrity-item { background: #f8fafc; border-radius: 8px; padding: 12px 14px; }
+.integrity-item .label { font-size: 0.82rem; color: var(--muted); margin-bottom: 3px; }
+.integrity-item .value { font-size: 1.4rem; font-weight: 700; }
+.integrity-item.alert { background: #fef3c7; }
+.integrity-item.alert .value { color: var(--warn); }
+
+/* 필터 바 */
+.filter-bar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; align-items: end; }
+.filter-bar > div { display: flex; flex-direction: column; gap: 4px; }
+.filter-bar label { font-size: 0.78rem; color: var(--muted); }
+.filter-bar select, .filter-bar input { padding: 7px 10px; border: 1px solid var(--border); border-radius: 7px; font: inherit; min-width: 130px; }
+
+/* 콜 로그 테이블 */
+.calls-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.calls-table th, .calls-table td { padding: 9px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+.calls-table th { font-size: 0.8rem; color: var(--muted); font-weight: 600; background: #f8fafc; }
+.calls-table tbody tr { cursor: pointer; }
+.calls-table tbody tr:hover { background: #f8fafc; }
+.calls-table .preview { color: var(--muted); font-size: 0.82rem; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.status-pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 0.78rem; font-weight: 600; }
+.status-pill.completed   { background: #d1fae5; color: #065f46; }
+.status-pill.transferred { background: #dbeafe; color: #1e40af; }
+.status-pill.failed      { background: #fee2e2; color: #991b1b; }
+.status-pill.blocked     { background: #f3f4f6; color: #4b5563; }
+.status-pill.in_progress { background: #fef3c7; color: #92400e; }
+
+/* SMS 상태 pill */
+.sms-pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 0.78rem; font-weight: 600; }
+.sms-pill.sent     { background: #d1fae5; color: #065f46; }
+.sms-pill.failed   { background: #fee2e2; color: #991b1b; }
+.sms-pill.skipped  { background: #f3f4f6; color: #4b5563; }
+.sms-pill.disabled { background: #f3f4f6; color: #9ca3af; }
+.sms-pill.none     { color: #9ca3af; font-weight: 400; }
+
+/* SMS 미리보기 박스 */
+.sms-preview-box {
+  background: #f8fafc; border: 1px solid var(--border); border-radius: 8px;
+  padding: 12px 14px; font-size: 0.88rem; line-height: 1.6;
+  white-space: pre-wrap; font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  min-height: 60px;
+}
+.sms-preview-meta { font-size: 0.78rem; color: var(--muted); margin-top: 6px; }
+.sms-preview-meta.long { color: var(--warn); font-weight: 600; }
+
+.pagination { display: flex; gap: 6px; justify-content: center; margin-top: 16px; align-items: center; }
+.pagination button { padding: 6px 12px; border: 1px solid var(--border); background: #fff; border-radius: 6px; cursor: pointer; }
+.pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* 상세 모달 */
+.modal-bg {
+  position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55);
+  display: none; align-items: flex-start; justify-content: center;
+  z-index: 50; padding: 40px 16px;
+  overflow-y: auto;
+}
+.modal-bg.show { display: flex; }
+.modal {
+  background: var(--card); border-radius: var(--radius);
+  max-width: 720px; width: 100%; padding: 26px 28px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+.modal h3 { font-size: 1.1rem; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+.modal .meta-grid { display: grid; grid-template-columns: 110px 1fr; gap: 6px 14px; font-size: 0.9rem; margin-bottom: 16px; }
+.modal .meta-grid .k { color: var(--muted); }
+.modal .transcript-box {
+  background: #f8fafc; border: 1px solid var(--border); border-radius: 8px;
+  padding: 14px; max-height: 360px; overflow-y: auto;
+  font-size: 0.88rem; line-height: 1.6; white-space: pre-wrap;
+}
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>📞 AICC 관리 대시보드</h1>
+    <div class="sub" id="phoneInfo">070 AI 전화 상담 · CLAW OPS + Gemini 3.1 Flash Live</div>
+  </header>
+
+  <div class="toolbar">
+    <div class="status"><span class="dot"></span><span id="agentStatus">상태 확인 중…</span></div>
+    <button class="ghost" onclick="reload()">↻ 다시 불러오기</button>
+    <button class="primary" id="saveBtn" onclick="save()">저장 + 즉시 적용</button>
+  </div>
+
+  <div class="warn-banner" id="dirtyBanner">⚠️ 변경된 내용이 있습니다. [저장 + 즉시 적용] 버튼을 눌러야 통화에 반영됩니다.</div>
+
+  <div class="tabs">
+    <button id="tabBtnSettings" class="active" onclick="switchTab('settings')">⚙️ 설정</button>
+    <button id="tabBtnLogs" onclick="switchTab('logs')">📊 콜 로그 & 분석</button>
+    <button id="tabBtnCallbacks" onclick="switchTab('callbacks')">🔄 콜백 큐 <span id="callbackBadge" class="tab-badge" style="display:none"></span></button>
+  </div>
+
+  <div id="tab-settings" class="tab-pane active">
+
+  <!-- 1. 라우팅 -->
+  <section class="card">
+    <h2>1. 상담사 연결 라우팅 <span class="live-badge instant">즉시 반영</span></h2>
+    <div class="desc">고객을 상담사에게 자동 연결할지 여부와 기준을 설정합니다.</div>
+
+    <div class="field">
+      <label class="toggle">
+        <input type="checkbox" id="routing_enabled">
+        <span class="slider"></span>
+        <span><strong>상담사 연결 기능 사용</strong> — 끄면 모든 자동 전환이 비활성화됩니다.</span>
+      </label>
+    </div>
+
+    <div class="field">
+      <label>전환 번호</label>
+      <input type="text" id="transfer_to" placeholder="예: 07087654321">
+      <div class="hint">고객을 연결할 상담사 회선 번호. 하이픈 없이 숫자만 입력하세요.</div>
+    </div>
+
+    <div class="field">
+      <label>연속 인식 실패 임계값 (회)</label>
+      <input type="number" id="failure_threshold" min="1" max="10">
+      <div class="hint">AI가 고객 발화를 N번 연속 못 알아들으면 자동으로 상담사에게 연결합니다. 권장: 3회.</div>
+    </div>
+  </section>
+
+  <!-- 2. 키워드 -->
+  <section class="card">
+    <h2>2. 전환 키워드 <span class="live-badge instant">즉시 반영</span></h2>
+    <div class="desc">고객이 이 표현을 말하면 즉시 상담사로 연결합니다.</div>
+
+    <div class="field">
+      <label>즉시 전환 키워드</label>
+      <div class="tag-list" id="transfer_kw_list"></div>
+      <div class="tag-input-row">
+        <input type="text" id="transfer_kw_input" placeholder="예: 상담사" onkeydown="if(event.key==='Enter'){addTag('transfer_keywords','transfer_kw_input');event.preventDefault();}">
+        <button class="ghost" onclick="addTag('transfer_keywords','transfer_kw_input')">+ 추가</button>
+      </div>
+      <div class="hint">고객 발화에 이 키워드가 포함되면 즉시 상담사 연결.</div>
+    </div>
+
+    <div class="field">
+      <label>욕설/컴플레인 키워드 (감지 시 즉시 연결)</label>
+      <div class="tag-list" id="complaint_kw_list"></div>
+      <div class="tag-input-row">
+        <input type="text" id="complaint_kw_input" placeholder="예: 환불해줘" onkeydown="if(event.key==='Enter'){addTag('complaint_keywords','complaint_kw_input');event.preventDefault();}">
+        <button class="ghost" onclick="addTag('complaint_keywords','complaint_kw_input')">+ 추가</button>
+      </div>
+      <div class="hint">강한 불만이나 욕설 키워드. 감지 시 즉시 상담사 연결됩니다.</div>
+    </div>
+
+    <div class="field">
+      <label>인식 실패 표현 (AI가 이 말을 하면 실패로 카운트)</label>
+      <div class="tag-list" id="failure_phrases_list"></div>
+      <div class="tag-input-row">
+        <input type="text" id="failure_phrases_input" placeholder="예: 잘 못 알아" onkeydown="if(event.key==='Enter'){addTag('failure_phrases','failure_phrases_input');event.preventDefault();}">
+        <button class="ghost" onclick="addTag('failure_phrases','failure_phrases_input')">+ 추가</button>
+      </div>
+      <div class="hint">AI 응답에 이 표현이 포함되면 인식 실패로 간주하고 카운트합니다. 임계값 도달 시 자동 전환.</div>
+    </div>
+  </section>
+
+  <!-- 3. 멘트 -->
+  <section class="card">
+    <h2>3. 안내 멘트 (G01~G51) <span class="live-badge swap">다음 통화부터 적용</span></h2>
+    <div class="desc">AICC 시나리오 v1.2 기본흐름 스크립트 15단계. AI가 각 상황에서 정확히 이 멘트로 말합니다.</div>
+
+    <div class="field">
+      <label>AI 상담원 페르소나 (시스템 프롬프트)</label>
+      <textarea id="persona" rows="14"></textarea>
+      <div class="hint">말투 원칙, 대화 흐름 규칙, TTS 숫자 처리 규칙. 어르신 대상이라 짧고 천천히 읽히는 문장 권장.</div>
+    </div>
+
+    <div class="field">
+      <label>G01 — 첫 인사</label>
+      <textarea id="greeting_message" rows="2"></textarea>
+      <div class="hint">전화 인입 즉시 재생.</div>
+    </div>
+
+    <div class="field">
+      <label>G02 — 1차 침묵 재시도 (3초 무응답)</label>
+      <textarea id="silence_retry_message" rows="2"></textarea>
+    </div>
+
+    <div class="field">
+      <label>G03 — 2차 침묵 종료 (총 8초 무응답)</label>
+      <textarea id="silence_close_message" rows="3"></textarea>
+    </div>
+
+    <div class="field">
+      <label>G11 — 1차 인식 실패</label>
+      <textarea id="failure_retry_1_message" rows="2"></textarea>
+    </div>
+
+    <div class="field">
+      <label>G12 — 2차 인식 실패 (예시 힌트)</label>
+      <textarea id="failure_retry_2_message" rows="3"></textarea>
+    </div>
+
+    <div class="field">
+      <label>G13 — 3차 인식 실패 (상담사 연결 직전)</label>
+      <textarea id="failure_transfer_message" rows="2"></textarea>
+    </div>
+
+    <div class="field">
+      <label>G20 — FAQ 답변 후 추가 문의 확인</label>
+      <textarea id="additional_inquiry_message" rows="2"></textarea>
+    </div>
+
+    <div class="field">
+      <label>G21 — 추가 문의 없음 (마무리)</label>
+      <textarea id="no_inquiry_close_message" rows="2"></textarea>
+    </div>
+
+    <div class="field">
+      <label>G30 — 정상 종료</label>
+      <textarea id="normal_close_message" rows="2"></textarea>
+    </div>
+
+    <div class="field">
+      <label>G40 — 상담사 직접 요청 응답</label>
+      <textarea id="transfer_request_message" rows="2"></textarea>
+    </div>
+
+    <div class="field">
+      <label>G41 — 상담사 연결 대기 안내</label>
+      <textarea id="transfer_waiting_message" rows="2"></textarea>
+    </div>
+
+    <div class="field">
+      <label>G42 — 상담사 연결 불가</label>
+      <textarea id="transfer_unavailable_message" rows="3"></textarea>
+    </div>
+
+    <div class="field">
+      <label>G50 — 운영시간 외</label>
+      <textarea id="out_of_hours_message" rows="3"></textarea>
+    </div>
+
+    <div class="field">
+      <label>G51 — 야간 앱 휴식 (0~4시)</label>
+      <textarea id="app_break_message" rows="2"></textarea>
+    </div>
+
+    <div class="field">
+      <label>점심시간 안내 멘트</label>
+      <textarea id="lunch_break_message" rows="3"></textarea>
+    </div>
+
+    <div class="field">
+      <label>휴무일 멘트</label>
+      <textarea id="holiday_message" rows="3"></textarea>
+    </div>
+  </section>
+
+  <!-- 4. 운영시간 -->
+  <section class="card">
+    <h2>4. 운영시간 <span class="live-badge instant">즉시 반영</span></h2>
+    <div class="desc">상담 가능한 요일과 시간을 설정합니다. 시간 외 호출은 자동 안내 후 종료됩니다.</div>
+    <table class="hours">
+      <thead><tr><th style="width:70px">사용</th><th style="width:80px">요일</th><th>시작</th><th>종료</th></tr></thead>
+      <tbody id="hoursBody"></tbody>
+    </table>
+  </section>
+
+  <!-- 4-1. 점심시간 -->
+  <section class="card">
+    <h2>4-1. 점심시간 <span class="live-badge instant">즉시 반영</span></h2>
+    <div class="desc">운영시간 안에서도 점심시간엔 자동 안내 멘트(상담사 연결 불가)가 나갑니다.</div>
+    <div class="field">
+      <label class="toggle">
+        <input type="checkbox" id="lunch_break_enabled">
+        <span class="slider"></span>
+        <span>점심시간 사용</span>
+      </label>
+    </div>
+    <div class="row">
+      <div class="field" style="flex:1; margin:0;">
+        <label>시작</label>
+        <input type="time" id="lunch_break_start">
+      </div>
+      <div class="field" style="flex:1; margin:0;">
+        <label>종료</label>
+        <input type="time" id="lunch_break_end">
+      </div>
+    </div>
+    <div class="hint" style="margin-top:6px">기본값: 13:00 ~ 14:00 (시나리오 v1.2 기준).</div>
+  </section>
+
+  <!-- 5. 야간 휴식 -->
+  <section class="card">
+    <h2>5. 야간 자동 휴식 <span class="live-badge instant">즉시 반영</span></h2>
+    <div class="desc">매일 지정 시간 동안은 운영시간이어도 자동 휴식 안내가 나갑니다.</div>
+    <div class="field">
+      <label class="toggle">
+        <input type="checkbox" id="app_break_enabled">
+        <span class="slider"></span>
+        <span>야간 휴식 시간 사용</span>
+      </label>
+    </div>
+    <div class="row">
+      <div class="field" style="flex:1; margin:0;">
+        <label>시작</label>
+        <input type="time" id="app_break_start">
+      </div>
+      <div class="field" style="flex:1; margin:0;">
+        <label>종료</label>
+        <input type="time" id="app_break_end">
+      </div>
+    </div>
+    <div class="hint" style="margin-top:6px">기본값: 0시 ~ 4시. 시작이 종료보다 늦으면 자정을 넘긴 시간대로 처리됩니다.</div>
+  </section>
+
+  <!-- 6. 휴무일 -->
+  <section class="card">
+    <h2>6. 휴무일 <span class="live-badge instant">즉시 반영</span></h2>
+    <div class="desc">특정 날짜를 휴무일로 지정합니다. 해당 날짜에는 휴무일 안내 후 통화가 종료됩니다.</div>
+    <div class="field">
+      <div class="tag-list" id="holidays_list"></div>
+      <div class="tag-input-row">
+        <input type="date" id="holidays_input">
+        <button class="ghost" onclick="addHoliday()">+ 추가</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. 사후 안내 SMS -->
+  <section class="card">
+    <h2>7. 사후 안내 SMS <span class="live-badge instant">즉시 반영</span></h2>
+    <div class="desc">통화 종료 후 고객에게 자동 발송하는 안내 문자. 헤더 + AI가 정리한 상담 요약 + 풋터로 합성됩니다.</div>
+
+    <div class="field">
+      <label class="toggle">
+        <input type="checkbox" id="sms_enabled">
+        <span class="slider"></span>
+        <span><strong>SMS 자동 발송 사용</strong></span>
+      </label>
+    </div>
+
+    <div class="field">
+      <label class="toggle">
+        <input type="checkbox" id="sms_mobile_only">
+        <span class="slider"></span>
+        <span>휴대폰(010 등)에만 발송 — 070·1588 등 사업자 번호는 자동 skip</span>
+      </label>
+    </div>
+
+    <div class="field">
+      <label class="toggle">
+        <input type="checkbox" id="sms_skip_blocked_calls">
+        <span class="slider"></span>
+        <span>운영시간 외/휴무 등 차단된 통화는 SMS 발송 안 함</span>
+      </label>
+    </div>
+
+    <div class="field">
+      <label class="toggle">
+        <input type="checkbox" id="sms_send_on_transfer">
+        <span class="slider"></span>
+        <span>상담사로 전환된 통화도 SMS 발송</span>
+      </label>
+    </div>
+
+    <div class="field">
+      <label>헤더 (고정 인사)</label>
+      <textarea id="sms_header_text" rows="2"></textarea>
+      <div class="hint">예: "안녕하세요. 상담 전화 주셔서 감사합니다."</div>
+    </div>
+
+    <div class="field">
+      <label>풋터 (고정 마무리)</label>
+      <textarea id="sms_footer_text" rows="3"></textarea>
+      <div class="hint">예: "궁금하신 점 생기시면 언제든지 다시 문의 주세요. - 마음케어 고객센터 1588-0000"</div>
+    </div>
+
+    <div class="field">
+      <label>상담 내용 없을 때 (가운데 대체 문구)</label>
+      <textarea id="sms_no_content_text" rows="2"></textarea>
+      <div class="hint">의미 있는 상담이 없었을 때 헤더와 풋터 사이에 들어가는 문구.</div>
+    </div>
+
+    <div class="field">
+      <label>요약 생성 최소 대화 턴</label>
+      <input type="number" id="sms_min_turns_for_summary" min="1" max="20">
+      <div class="hint">고객·AI 합쳐서 이 턴 미만이면 "상담 내용 없음"으로 간주합니다. 권장: 2.</div>
+    </div>
+
+    <div class="field">
+      <label>실시간 미리보기</label>
+      <div class="sms-preview-box" id="sms_preview_box">미리보기를 불러오는 중…</div>
+      <div class="sms-preview-meta" id="sms_preview_meta"></div>
+      <div class="hint" style="margin-top:8px">위 헤더·풋터·"상담 내용 없을 때"를 수정하면 자동 갱신됩니다. (저장 전 변경분도 반영)</div>
+    </div>
+  </section>
+
+  <!-- 8. 수동 SMS 발송 -->
+  <section class="card" id="section-manual-sms">
+    <h2>8. 수동 SMS 발송 <span class="live-badge" style="background:#fef3c7;color:#92400e">관리자 전용</span></h2>
+    <div class="desc">
+      임의의 번호에 임의의 메시지를 즉시 발송합니다.
+      <strong style="color:#991b1b">실수 방지 — 미리보기 → 확인 두 단계 필수.</strong>
+      90byte 초과 시 자동 LMS 전환. 여러 번호 한 번에 가능.
+    </div>
+
+    <div class="form-row">
+      <label>수신번호 <span style="color:var(--muted);font-weight:400">(쉼표 또는 줄바꿈으로 여러 개)</span></label>
+      <textarea id="manual_sms_to" rows="3" placeholder="010-1234-5678&#10;01087654321"></textarea>
+      <div class="hint">중복 자동 제거 · 010·011 등 휴대폰만 발송 (070·1588 자동 skip)</div>
+    </div>
+
+    <div class="form-row">
+      <label>본문</label>
+      <textarea id="manual_sms_content" rows="6" placeholder="안녕하세요. 마음케어입니다.&#10;..."></textarea>
+      <div class="hint">
+        <span id="manual_sms_bytes">0</span> byte ·
+        <strong id="manual_sms_type">SMS</strong>
+        <span id="manual_sms_long_warn" style="color:var(--warn);display:none">— 90byte 초과로 LMS 전환됩니다</span>
+      </div>
+    </div>
+
+    <div class="form-row" id="manual_sms_subject_wrap" style="display:none">
+      <label>LMS 제목 <span style="color:var(--muted);font-weight:400">(40byte 이내, 선택)</span></label>
+      <input type="text" id="manual_sms_subject" placeholder="마음케어 안내" maxlength="40">
+    </div>
+
+    <div class="form-row">
+      <div id="manual_sms_provider_status"
+           style="padding:10px 14px; background:#f3f4f6; border-radius:8px; font-size:0.85rem; color:var(--muted)">
+        NCP SENS 상태 확인 중…
+      </div>
+    </div>
+
+    <div style="display:flex; gap:8px; margin-top:16px; flex-wrap:wrap">
+      <button class="ghost" onclick="previewManualSms()">📋 미리보기 (안전)</button>
+      <button class="primary" id="manual_sms_send_btn" onclick="sendManualSms()" disabled
+              style="background:#dc2626;color:#fff">📨 실제 발송</button>
+      <button class="ghost" onclick="resetManualSms()">↻ 초기화</button>
+    </div>
+
+    <div id="manual_sms_result" style="margin-top:16px; display:none"></div>
+  </section>
+
+  <!-- 9. 수동 알림톡 발송 -->
+  <section class="card" id="section-manual-alimtalk">
+    <h2>9. 수동 알림톡 발송 <span class="live-badge" style="background:#fef3c7;color:#92400e">관리자 전용</span></h2>
+    <div class="desc">
+      <strong>NCP SENS Biz Message</strong> — 카카오톡 알림톡으로 발송.
+      <strong style="color:#991b1b">사전 승인된 템플릿 코드 필수.</strong>
+      카톡 미설치/차단 시 SMS 대체 발송 옵션 제공.
+    </div>
+
+    <div class="form-row">
+      <label>수신번호 <span style="color:var(--muted);font-weight:400">(쉼표 또는 줄바꿈)</span></label>
+      <textarea id="alimtalk_to" rows="3" placeholder="010-1234-5678&#10;01087654321"></textarea>
+      <div class="hint">중복 자동 제거 · 010·011 등 휴대폰만 발송</div>
+    </div>
+
+    <div class="form-row">
+      <label>카카오 채널 ID
+        <span style="color:var(--muted);font-weight:400">(미입력 시 NCP_KAKAO_CHANNEL 환경변수)</span>
+      </label>
+      <input type="text" id="alimtalk_plusfriend" placeholder="@maumcare">
+    </div>
+
+    <div class="form-row">
+      <label>템플릿 코드 <span style="color:#dc2626">*</span>
+        <span style="color:var(--muted);font-weight:400">(NCP 콘솔 → 알림톡 → 템플릿에서 확인)</span>
+      </label>
+      <input type="text" id="alimtalk_template" placeholder="TEMP001">
+    </div>
+
+    <div class="form-row">
+      <label>본문
+        <span style="color:var(--muted);font-weight:400">(템플릿 규격에 맞게 변수 치환된 최종)</span>
+      </label>
+      <textarea id="alimtalk_content" rows="6"
+                placeholder="홍길동 님,&#10;요청하신 [PO394857] 건이 처리되었습니다.&#10;..."></textarea>
+      <div class="hint"><span id="alimtalk_bytes">0</span> byte</div>
+    </div>
+
+    <div class="form-row">
+      <label>강조 제목
+        <span style="color:var(--muted);font-weight:400">(강조 표기형 템플릿에서만, 선택)</span>
+      </label>
+      <input type="text" id="alimtalk_title" placeholder="처방 알림">
+    </div>
+
+    <div class="form-row">
+      <label class="checkbox-row" style="cursor:pointer">
+        <input type="checkbox" id="alimtalk_failover">
+        <span>📲 <strong>SMS 대체 발송</strong> 사용 (카톡 못 받으면 같은 본문으로 SMS 자동)</span>
+      </label>
+    </div>
+
+    <div style="display:flex; gap:8px; margin-top:16px; flex-wrap:wrap">
+      <button class="ghost" onclick="previewManualAlimtalk()">📋 미리보기 (안전)</button>
+      <button class="primary" id="alimtalk_send_btn" onclick="sendManualAlimtalk()" disabled
+              style="background:#dc2626;color:#fff">💬 실제 발송</button>
+      <button class="ghost" onclick="resetManualAlimtalk()">↻ 초기화</button>
+    </div>
+
+    <div id="alimtalk_result" style="margin-top:16px; display:none"></div>
+  </section>
+
+  </div><!-- /tab-settings -->
+
+  <!-- ============== 콜 로그 & 분석 탭 ============== -->
+  <div id="tab-logs" class="tab-pane">
+
+    <div class="filter-bar" style="margin-bottom:18px">
+      <div>
+        <label>분석 기간</label>
+        <select id="analytics_days" onchange="loadAnalytics()">
+          <option value="1">오늘</option>
+          <option value="7" selected>최근 7일</option>
+          <option value="30">최근 30일</option>
+          <option value="90">최근 90일</option>
+          <option value="365">최근 1년</option>
+        </select>
+      </div>
+      <div style="margin-left:auto">
+        <button class="ghost" onclick="loadAnalytics(); loadIntegrity(); loadCalls();">↻ 새로 고침</button>
+      </div>
+    </div>
+
+    <!-- KPI 카드 -->
+    <div class="kpi-row" id="kpiRow"></div>
+
+    <!-- 카테고리 + 고객유형 -->
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+      <section class="card">
+        <h2>문의 카테고리 분포</h2>
+        <div class="desc">어떤 문의가 많이 들어오는지 한눈에 파악</div>
+        <div class="bar-chart" id="categoryChart"></div>
+      </section>
+      <section class="card">
+        <h2>고객 유형 분포</h2>
+        <div class="desc">신규/재문의/불만/일반 비율</div>
+        <div class="bar-chart" id="customerTypeChart"></div>
+      </section>
+    </div>
+
+    <!-- 일별 추이 -->
+    <section class="card">
+      <h2>일별 통화량</h2>
+      <div class="desc">기간 내 일별 인입 통화 수</div>
+      <div class="sparkline" id="dailyChart"></div>
+      <div id="dailyLegend" style="font-size:0.8rem; color:var(--muted); margin-top:6px; display:flex; justify-content:space-between;"></div>
+    </section>
+
+    <!-- 데이터 정합성 -->
+    <section class="card">
+      <h2>데이터 정합성</h2>
+      <div class="desc">통화 로그에서 누락되거나 분류되지 않은 항목 점검</div>
+      <div class="integrity-grid" id="integrityGrid"></div>
+      <div style="margin-top:14px; display:flex; gap:8px;">
+        <button class="ghost" onclick="reclassifyAll()">미분류 일괄 재분류 (최근 20건)</button>
+      </div>
+    </section>
+
+    <!-- 콜 로그 목록 -->
+    <section class="card">
+      <h2>최근 통화 목록</h2>
+      <div class="desc">행을 클릭하면 상세 정보(트랜스크립트/녹음 다운로드)가 표시됩니다.</div>
+
+      <div class="filter-bar">
+        <div>
+          <label>시작일</label>
+          <input type="date" id="filter_from">
+        </div>
+        <div>
+          <label>종료일</label>
+          <input type="date" id="filter_to">
+        </div>
+        <div>
+          <label>카테고리</label>
+          <select id="filter_category">
+            <option value="">전체</option>
+            <option>앱 찾기·설치</option>
+            <option>훈련 방법</option>
+            <option>앱 기술 문제</option>
+            <option>훈련 내용</option>
+            <option>환불·처방</option>
+            <option>기타</option>
+          </select>
+        </div>
+        <div>
+          <label>고객 유형</label>
+          <select id="filter_customer_type">
+            <option value="">전체</option>
+            <option>신규</option>
+            <option>재문의</option>
+            <option>불만</option>
+            <option>일반</option>
+          </select>
+        </div>
+        <div>
+          <label>상태</label>
+          <select id="filter_status">
+            <option value="">전체</option>
+            <option value="completed">완료</option>
+            <option value="transferred">전환</option>
+            <option value="failed">실패</option>
+            <option value="blocked">차단</option>
+          </select>
+        </div>
+        <div>
+          <label>발신번호</label>
+          <input type="text" id="filter_from_number" placeholder="01012345678">
+        </div>
+        <div>
+          <button class="primary" onclick="callsPage=1; loadCalls();">필터 적용</button>
+        </div>
+      </div>
+
+      <table class="calls-table">
+        <thead>
+          <tr>
+            <th>시작 시각</th>
+            <th>발신번호</th>
+            <th>상태</th>
+            <th>카테고리</th>
+            <th>고객유형</th>
+            <th>실패</th>
+            <th>시간</th>
+            <th>SMS</th>
+            <th>트랜스크립트 미리보기</th>
+          </tr>
+        </thead>
+        <tbody id="callsTbody">
+          <tr><td colspan="9" style="text-align:center; padding:30px; color:var(--muted);">불러오는 중…</td></tr>
+        </tbody>
+      </table>
+      <div class="pagination" id="callsPagination"></div>
+    </section>
+
+  </div><!-- /tab-logs -->
+
+  <!-- ============== 콜백 큐 탭 ============== -->
+  <div id="tab-callbacks" class="tab-pane">
+
+    <!-- KPI -->
+    <div class="kpi-row" id="callbackKpiRow" style="margin-bottom:18px"></div>
+
+    <!-- 수동 추가 -->
+    <section class="card">
+      <h2>➕ 콜백 수동 추가</h2>
+      <div class="desc">통화 실패·차단 통화는 자동 큐잉됩니다. 여기는 관리자가 직접 추가할 때.</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-bottom:12px">
+        <div>
+          <label style="font-size:0.78rem; color:var(--muted)">고객 번호 (필수)</label>
+          <input type="text" id="cb_new_phone" placeholder="010-1234-5678">
+        </div>
+        <div>
+          <label style="font-size:0.78rem; color:var(--muted)">고객명 (선택)</label>
+          <input type="text" id="cb_new_name" placeholder="홍길동">
+        </div>
+        <div>
+          <label style="font-size:0.78rem; color:var(--muted)">우선순위</label>
+          <select id="cb_new_priority">
+            <option value="1">1 - 낮음</option>
+            <option value="2">2</option>
+            <option value="3" selected>3 - 보통</option>
+            <option value="4">4 - 높음</option>
+            <option value="5">5 - 매우 긴급</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:0.78rem; color:var(--muted)">사유 / 메모</label>
+        <textarea id="cb_new_reason" rows="2" placeholder="예: 환불 문의, 추가 안내 필요 등"></textarea>
+      </div>
+      <button class="primary" onclick="createCallback()">큐에 추가</button>
+    </section>
+
+    <!-- 필터 + 목록 -->
+    <section class="card" style="margin-top:18px">
+      <h2>📋 콜백 목록</h2>
+      <div class="filter-bar" style="margin-bottom:14px">
+        <div>
+          <label>상태</label>
+          <select id="cb_filter_status" onchange="loadCallbacks()">
+            <option value="active">대기/진행중</option>
+            <option value="">전체</option>
+            <option value="pending">대기</option>
+            <option value="in_progress">진행중</option>
+            <option value="done">완료</option>
+            <option value="failed">실패</option>
+            <option value="cancelled">취소</option>
+          </select>
+        </div>
+        <div>
+          <label>고객 번호 (부분)</label>
+          <input type="text" id="cb_filter_phone" placeholder="010..." oninput="loadCallbacksDebounced()">
+        </div>
+        <div style="margin-left:auto">
+          <button class="ghost" onclick="loadCallbacks()">↻ 새로고침</button>
+        </div>
+      </div>
+
+      <table class="call-table">
+        <thead>
+          <tr>
+            <th style="width:50px">P</th>
+            <th>고객</th>
+            <th>사유 (소스)</th>
+            <th>상태</th>
+            <th>재시도</th>
+            <th>생성 시각</th>
+            <th>액션</th>
+          </tr>
+        </thead>
+        <tbody id="cb_table_body"></tbody>
+      </table>
+      <div id="cb_empty" style="text-align:center; color:var(--muted); padding:30px; display:none">콜백 큐가 비어있어요.</div>
+    </section>
+  </div><!-- /tab-callbacks -->
+
+</div><!-- /container -->
+
+<!-- 통화 상세 모달 -->
+<div class="modal-bg" id="callModalBg" onclick="if(event.target.id==='callModalBg') closeCallModal()">
+  <div class="modal">
+    <h3 id="callModalTitle">📞 통화 상세</h3>
+    <div class="meta-grid" id="callModalMeta"></div>
+    <div style="font-weight:600; font-size:0.9rem; margin-bottom:6px;">트랜스크립트 (정제 버전)</div>
+    <div class="transcript-box" id="callModalTranscript">로딩 중…</div>
+
+    <div style="font-weight:600; font-size:0.9rem; margin: 18px 0 6px;">📨 사후 안내 SMS</div>
+    <div class="meta-grid" id="callModalSmsMeta" style="margin-bottom:8px;"></div>
+    <div id="callModalSmsBodyWrap" style="display:none;">
+      <div style="font-size:0.82rem; color:var(--muted); margin-bottom:4px;">발송된 본문</div>
+      <div class="sms-preview-box" id="callModalSmsBody"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="ghost" id="callModalResendSms">📨 SMS 재발송</button>
+      <button class="ghost" id="callModalReclassify">재분류</button>
+      <a id="callModalRecording" class="ghost" style="display:none; text-decoration:none; padding:9px 18px; border:1px solid var(--border); border-radius:8px;">🎙️ 녹음 다운로드</a>
+      <button class="primary" onclick="closeCallModal()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<div id="snackbar"></div>
+
+<script>
+const DAY_LABELS = {monday:"월", tuesday:"화", wednesday:"수", thursday:"목", friday:"금", saturday:"토", sunday:"일"};
+const DAYS = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"];
+let state = null;
+let dirty = false;
+
+function snack(msg, isError=false) {
+  const s = document.getElementById("snackbar");
+  s.textContent = msg;
+  s.className = "show" + (isError ? " error" : "");
+  setTimeout(() => { s.className = ""; }, 2400);
+}
+function setDirty(v) {
+  dirty = v;
+  document.getElementById("dirtyBanner").classList.toggle("show", v);
+}
+
+function renderTags(field, listId) {
+  const arr = state.routing[field] || [];
+  const ul = document.getElementById(listId);
+  ul.innerHTML = "";
+  arr.forEach((kw, i) => {
+    const tag = document.createElement("span");
+    tag.className = "tag";
+    tag.innerHTML = `<span></span><button title="삭제">×</button>`;
+    tag.querySelector("span").textContent = kw;
+    tag.querySelector("button").onclick = () => {
+      state.routing[field].splice(i, 1);
+      renderTags(field, listId);
+      setDirty(true);
+    };
+    ul.appendChild(tag);
+  });
+}
+
+function addTag(field, inputId) {
+  const inp = document.getElementById(inputId);
+  const v = inp.value.trim();
+  if (!v) return;
+  if (!state.routing[field]) state.routing[field] = [];
+  if (state.routing[field].includes(v)) { snack("이미 등록된 키워드입니다", true); return; }
+  state.routing[field].push(v);
+  inp.value = "";
+  const listId = inputId.replace("_input", "_list");
+  renderTags(field, listId);
+  setDirty(true);
+}
+
+function renderHolidays() {
+  const ul = document.getElementById("holidays_list");
+  ul.innerHTML = "";
+  (state.schedule.holidays || []).forEach((d, i) => {
+    const tag = document.createElement("span");
+    tag.className = "tag";
+    tag.innerHTML = `<span></span><button>×</button>`;
+    tag.querySelector("span").textContent = d;
+    tag.querySelector("button").onclick = () => {
+      state.schedule.holidays.splice(i, 1);
+      renderHolidays();
+      setDirty(true);
+    };
+    ul.appendChild(tag);
+  });
+}
+
+function addHoliday() {
+  const v = document.getElementById("holidays_input").value;
+  if (!v) return;
+  if (!state.schedule.holidays) state.schedule.holidays = [];
+  if (state.schedule.holidays.includes(v)) { snack("이미 등록된 날짜입니다", true); return; }
+  state.schedule.holidays.push(v);
+  state.schedule.holidays.sort();
+  document.getElementById("holidays_input").value = "";
+  renderHolidays();
+  setDirty(true);
+}
+
+function renderHours() {
+  const tb = document.getElementById("hoursBody");
+  tb.innerHTML = "";
+  DAYS.forEach(day => {
+    const cfg = state.schedule.operating_hours[day] || {start:"10:00", end:"18:00", active:false};
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><label class="toggle"><input type="checkbox" ${cfg.active?'checked':''} data-day="${day}" data-key="active"><span class="slider"></span></label></td>
+      <td><strong>${DAY_LABELS[day]}</strong></td>
+      <td><input type="time" value="${cfg.start}" data-day="${day}" data-key="start"></td>
+      <td><input type="time" value="${cfg.end}" data-day="${day}" data-key="end"></td>
+    `;
+    tb.appendChild(tr);
+  });
+  tb.querySelectorAll("input").forEach(el => {
+    el.addEventListener("change", e => {
+      const day = e.target.dataset.day;
+      const key = e.target.dataset.key;
+      const val = e.target.type === "checkbox" ? e.target.checked : e.target.value;
+      state.schedule.operating_hours[day][key] = val;
+      setDirty(true);
+    });
+  });
+}
+
+function bindInput(id, getRef, setRef) {
+  const el = document.getElementById(id);
+  el.value = getRef();
+  el.addEventListener("input", () => { setRef(el.type === "number" ? Number(el.value) : el.value); setDirty(true); });
+}
+function bindCheckbox(id, getRef, setRef) {
+  const el = document.getElementById(id);
+  el.checked = !!getRef();
+  el.addEventListener("change", () => { setRef(el.checked); setDirty(true); });
+}
+
+function bindAll() {
+  bindCheckbox("routing_enabled", () => state.routing.enabled, v => state.routing.enabled = v);
+  bindInput("transfer_to", () => state.routing.transfer_to, v => state.routing.transfer_to = v);
+  bindInput("failure_threshold", () => state.routing.failure_threshold, v => state.routing.failure_threshold = v);
+
+  // 페르소나 + 단계별 G-code 멘트 (xlsx 시나리오 v1.2 기반 15종)
+  const PROMPT_FIELDS = [
+    "persona",
+    "greeting_message",                // G01
+    "silence_retry_message",           // G02
+    "silence_close_message",           // G03
+    "failure_retry_1_message",         // G11
+    "failure_retry_2_message",         // G12
+    "failure_transfer_message",        // G13
+    "additional_inquiry_message",      // G20
+    "no_inquiry_close_message",        // G21
+    "normal_close_message",            // G30
+    "transfer_request_message",        // G40
+    "transfer_waiting_message",        // G41
+    "transfer_unavailable_message",    // G42
+    "out_of_hours_message",            // G50
+    "app_break_message",               // G51
+    "lunch_break_message",
+    "holiday_message",
+  ];
+  PROMPT_FIELDS.forEach(name => {
+    if (state.prompts[name] === undefined) state.prompts[name] = "";
+    bindInput(name, () => state.prompts[name], v => state.prompts[name] = v);
+  });
+
+  // 점심시간
+  if (!state.schedule.lunch_break) state.schedule.lunch_break = {enabled:true, start:"13:00", end:"14:00"};
+  bindCheckbox("lunch_break_enabled", () => state.schedule.lunch_break.enabled, v => state.schedule.lunch_break.enabled = v);
+  bindInput("lunch_break_start", () => state.schedule.lunch_break.start, v => state.schedule.lunch_break.start = v);
+  bindInput("lunch_break_end", () => state.schedule.lunch_break.end, v => state.schedule.lunch_break.end = v);
+
+  // 야간 앱 휴식
+  bindCheckbox("app_break_enabled", () => state.schedule.app_break.enabled, v => state.schedule.app_break.enabled = v);
+  bindInput("app_break_start", () => state.schedule.app_break.start, v => state.schedule.app_break.start = v);
+  bindInput("app_break_end", () => state.schedule.app_break.end, v => state.schedule.app_break.end = v);
+
+  // SMS 설정
+  if (!state.sms) state.sms = {
+    enabled: true, mobile_only: true,
+    header_text: "", footer_text: "", no_content_text: "",
+    min_turns_for_summary: 2, skip_blocked_calls: true, send_on_transfer: true,
+  };
+  bindCheckbox("sms_enabled", () => state.sms.enabled, v => { state.sms.enabled = v; refreshSmsPreview(); });
+  bindCheckbox("sms_mobile_only", () => state.sms.mobile_only, v => state.sms.mobile_only = v);
+  bindCheckbox("sms_skip_blocked_calls", () => state.sms.skip_blocked_calls, v => state.sms.skip_blocked_calls = v);
+  bindCheckbox("sms_send_on_transfer", () => state.sms.send_on_transfer, v => state.sms.send_on_transfer = v);
+  bindInput("sms_header_text", () => state.sms.header_text, v => { state.sms.header_text = v; refreshSmsPreview(); });
+  bindInput("sms_footer_text", () => state.sms.footer_text, v => { state.sms.footer_text = v; refreshSmsPreview(); });
+  bindInput("sms_no_content_text", () => state.sms.no_content_text, v => { state.sms.no_content_text = v; refreshSmsPreview(); });
+  bindInput("sms_min_turns_for_summary", () => state.sms.min_turns_for_summary, v => state.sms.min_turns_for_summary = v);
+
+  renderTags("transfer_keywords", "transfer_kw_list");
+  renderTags("complaint_keywords", "complaint_kw_list");
+  renderTags("failure_phrases", "failure_phrases_list");
+  renderHolidays();
+  renderHours();
+  refreshSmsPreview();
+}
+
+// SMS 본문 클라이언트 사이드 합성 (서버와 동일 로직 — 즉시 미리보기용)
+function renderSmsPreview(sample) {
+  const sms = state.sms || {};
+  const header = (sms.header_text || "").trim();
+  const footer = (sms.footer_text || "").trim();
+  const middle = sample && sample.trim() ? sample.trim() : (sms.no_content_text || "").trim();
+  const body = [header, middle, footer].filter(Boolean).join("\n\n");
+  const byteLen = new TextEncoder().encode(body).length;
+  const isLong = byteLen > 90;
+  document.getElementById("sms_preview_box").textContent = body || "(헤더/풋터/대체문구가 모두 비어있어 발송되지 않습니다)";
+  const meta = document.getElementById("sms_preview_meta");
+  meta.textContent = `${byteLen} bytes · ${isLong ? "LMS(장문) 자동 전환" : "단문 SMS (90 bytes 이하)"}`;
+  meta.classList.toggle("long", isLong);
+}
+let _smsPreviewSample = "(상담 요약 예시) 앱 설치 위치를 안내드렸고, 가족 도움이 필요하시면 다시 전화 주시라고 말씀드렸습니다.";
+function refreshSmsPreview() { renderSmsPreview(_smsPreviewSample); }
+
+async function reload() {
+  document.getElementById("agentStatus").textContent = "불러오는 중…";
+  try {
+    const [cfgResp, statusResp] = await Promise.all([
+      fetch("/admin/aicc/config"),
+      fetch("/admin/aicc/status"),
+    ]);
+    if (!cfgResp.ok) throw new Error("config load failed");
+    state = await cfgResp.json();
+    const st = await statusResp.json();
+    document.getElementById("agentStatus").textContent =
+      st.live_handler_registered ? "AICC 에이전트 정상 동작 중" : "AICC 에이전트가 시작되지 않았습니다 (저장은 가능)";
+    bindAll();
+    setDirty(false);
+  } catch (e) {
+    snack("설정을 불러오지 못했습니다: " + e.message, true);
+    document.getElementById("agentStatus").textContent = "오류";
+  }
+}
+
+async function save() {
+  const btn = document.getElementById("saveBtn");
+  btn.disabled = true;
+  btn.textContent = "저장 중…";
+  try {
+    const r = await fetch("/admin/aicc/config", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(state),
+    });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.detail || "save failed");
+    snack(j.message || "저장 완료");
+    setDirty(false);
+  } catch (e) {
+    snack("저장 실패: " + e.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "저장 + 즉시 적용";
+  }
+}
+
+window.addEventListener("DOMContentLoaded", reload);
+window.addEventListener("beforeunload", e => {
+  if (dirty) { e.preventDefault(); e.returnValue = ""; }
+});
+
+// ============== 탭 전환 ==============
+const TAB_BTN_MAP = {settings: "tabBtnSettings", logs: "tabBtnLogs", callbacks: "tabBtnCallbacks"};
+
+function switchTab(name) {
+  document.querySelectorAll(".tab-pane").forEach(el => el.classList.remove("active"));
+  document.querySelectorAll(".tabs button").forEach(el => el.classList.remove("active"));
+  document.getElementById(`tab-${name}`).classList.add("active");
+  const btnId = TAB_BTN_MAP[name] || `tabBtn${name.charAt(0).toUpperCase() + name.slice(1)}`;
+  const btnEl = document.getElementById(btnId);
+  if (btnEl) btnEl.classList.add("active");
+  if (name === "callbacks") {
+    loadCallbackStats();
+    loadCallbacks();
+  }
+  if (name === "logs" && !window._logsLoaded) {
+    window._logsLoaded = true;
+    loadAnalytics();
+    loadIntegrity();
+    loadCalls();
+  }
+}
+
+// ============== 분석 (KPI + 차트) ==============
+async function loadAnalytics() {
+  const days = document.getElementById("analytics_days").value;
+  try {
+    const r = await fetch(`/admin/aicc/analytics?days=${days}`);
+    const d = await r.json();
+    renderKpi(d);
+    renderBarChart("categoryChart", d.categories);
+    renderBarChart("customerTypeChart", d.customer_types);
+    renderSparkline("dailyChart", d.daily, "dailyLegend");
+  } catch (e) {
+    snack("분석 로드 실패: " + e.message, true);
+  }
+}
+
+function renderKpi(d) {
+  const blocked = d.block_count || 0;
+  const html = `
+    <div class="kpi"><div class="label">총 인입</div><div class="value">${d.total}</div><div class="sub">${d.days}일 기준</div></div>
+    <div class="kpi"><div class="label">실제 응답</div><div class="value">${d.engaged}</div><div class="sub">차단 제외</div></div>
+    <div class="kpi"><div class="label">전환율</div><div class="value">${d.transfer_rate_pct}%</div><div class="sub">상담사 연결</div></div>
+    <div class="kpi ${d.fail_rate_pct > 10 ? 'warn' : ''}"><div class="label">실패율</div><div class="value">${d.fail_rate_pct}%</div><div class="sub">통화 실패</div></div>
+    <div class="kpi"><div class="label">차단</div><div class="value">${blocked}</div><div class="sub">시간외/휴무 등</div></div>
+  `;
+  document.getElementById("kpiRow").innerHTML = html;
+}
+
+function renderBarChart(elId, items) {
+  const el = document.getElementById(elId);
+  if (!items || !items.length) { el.innerHTML = '<div style="color:var(--muted); font-size:0.88rem;">데이터 없음</div>'; return; }
+  const max = Math.max(...items.map(it => it.count), 1);
+  el.innerHTML = items.map(it => {
+    const w = (it.count / max * 100).toFixed(1);
+    return `<div class="bar-row">
+      <div class="label" title="${it.key}">${it.key}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${w}%"></div></div>
+      <div class="count">${it.count}</div>
+    </div>`;
+  }).join("");
+}
+
+function renderSparkline(elId, daily, legendId) {
+  const el = document.getElementById(elId);
+  const legend = document.getElementById(legendId);
+  if (!daily || !daily.length) { el.innerHTML = '<div style="color:var(--muted); font-size:0.88rem;">데이터 없음</div>'; legend.innerHTML = ""; return; }
+  const max = Math.max(...daily.map(d => d.count), 1);
+  el.innerHTML = daily.map(d => {
+    const h = (d.count / max * 100).toFixed(1);
+    return `<div class="bar" style="height:${h}%" title="${d.day}: ${d.count}건"></div>`;
+  }).join("");
+  legend.innerHTML = `<span>${daily[0].day}</span><span>${daily[daily.length-1].day}</span>`;
+}
+
+// ============== 데이터 정합성 ==============
+async function loadIntegrity() {
+  try {
+    const r = await fetch("/admin/aicc/data-integrity");
+    const d = await r.json();
+    const items = [
+      {label:"전체 통화", key:"total_calls", alert:false},
+      {label:"미분류", key:"unclassified", alert:d.unclassified > 0},
+      {label:"녹음 누락", key:"no_recording", alert:d.no_recording > 0},
+      {label:"트랜스크립트 누락", key:"no_transcript", alert:d.no_transcript > 0},
+      {label:"분류 실패", key:"classification_failed", alert:d.classification_failed > 0},
+      {label:"중단된 통화", key:"in_progress_stale", alert:d.in_progress_stale > 0},
+    ];
+    document.getElementById("integrityGrid").innerHTML = items.map(it => `
+      <div class="integrity-item ${it.alert ? 'alert' : ''}">
+        <div class="label">${it.label}</div>
+        <div class="value">${d[it.key]}</div>
+      </div>
+    `).join("");
+  } catch (e) {
+    snack("정합성 로드 실패: " + e.message, true);
+  }
+}
+
+async function reclassifyAll() {
+  if (!confirm("미분류 통화 최대 20건을 재분류합니다. 진행할까요?")) return;
+  snack("재분류 진행 중… (시간이 걸릴 수 있습니다)");
+  try {
+    const r = await fetch("/admin/aicc/reclassify-all?limit=20", {method:"POST"});
+    const d = await r.json();
+    snack(`${d.processed}건 재분류 완료`);
+    loadIntegrity(); loadCalls(); loadAnalytics();
+  } catch (e) {
+    snack("재분류 실패: " + e.message, true);
+  }
+}
+
+// ============== 콜 로그 목록 ==============
+let callsPage = 1;
+const CALLS_PAGE_SIZE = 50;
+
+async function loadCalls() {
+  const params = new URLSearchParams();
+  const f = id => document.getElementById(id).value;
+  if (f("filter_from")) params.set("from", f("filter_from"));
+  if (f("filter_to")) params.set("to", f("filter_to"));
+  if (f("filter_category")) params.set("category", f("filter_category"));
+  if (f("filter_customer_type")) params.set("customer_type", f("filter_customer_type"));
+  if (f("filter_status")) params.set("status", f("filter_status"));
+  if (f("filter_from_number")) params.set("from_number", f("filter_from_number"));
+  params.set("page", callsPage);
+  params.set("page_size", CALLS_PAGE_SIZE);
+
+  try {
+    const r = await fetch("/admin/aicc/calls?" + params);
+    const d = await r.json();
+    renderCallsTable(d.calls);
+    renderPagination(d.total);
+  } catch (e) {
+    snack("통화 목록 로드 실패: " + e.message, true);
+  }
+}
+
+function statusLabel(s) {
+  return ({completed:"완료", transferred:"전환", failed:"실패", blocked:"차단", in_progress:"진행중"})[s] || s;
+}
+
+function fmtTime(iso) {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  return d.toLocaleString("ko-KR", {month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit"});
+}
+
+function fmtDuration(sec) {
+  if (!sec) return "-";
+  const m = Math.floor(sec / 60), s = sec % 60;
+  return m > 0 ? `${m}분 ${s}초` : `${s}초`;
+}
+
+function smsLabel(s) {
+  return ({sent:"발송", failed:"실패", skipped:"skip", disabled:"비활성"})[s] || "-";
+}
+function smsPill(status) {
+  if (!status) return '<span class="sms-pill none">-</span>';
+  return `<span class="sms-pill ${status}">${smsLabel(status)}</span>`;
+}
+
+function renderCallsTable(calls) {
+  const tb = document.getElementById("callsTbody");
+  if (!calls.length) { tb.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:30px; color:var(--muted);">통화 기록이 없습니다.</td></tr>'; return; }
+  tb.innerHTML = calls.map(c => `
+    <tr onclick="openCallModal('${c.call_id}')">
+      <td>${fmtTime(c.started_at)}</td>
+      <td>${c.from_number || '-'}</td>
+      <td><span class="status-pill ${c.status}">${statusLabel(c.status)}</span></td>
+      <td>${c.category || '<span style="color:var(--muted)">미분류</span>'}</td>
+      <td>${c.customer_type || '-'}</td>
+      <td>${c.failure_count || 0}</td>
+      <td>${fmtDuration(c.duration_sec)}</td>
+      <td>${smsPill(c.sms_status)}</td>
+      <td class="preview">${(c.transcript || '').substring(0, 100).replace(/\n/g, ' ')}</td>
+    </tr>
+  `).join("");
+}
+
+function renderPagination(total) {
+  const pages = Math.ceil(total / CALLS_PAGE_SIZE);
+  const el = document.getElementById("callsPagination");
+  if (pages <= 1) { el.innerHTML = `<span style="color:var(--muted); font-size:0.85rem;">총 ${total}건</span>`; return; }
+  el.innerHTML = `
+    <button onclick="callsPage--; loadCalls();" ${callsPage <= 1 ? 'disabled' : ''}>◀ 이전</button>
+    <span style="font-size:0.88rem; color:var(--muted);">${callsPage} / ${pages} (총 ${total}건)</span>
+    <button onclick="callsPage++; loadCalls();" ${callsPage >= pages ? 'disabled' : ''}>다음 ▶</button>
+  `;
+}
+
+// ============== 상세 모달 ==============
+async function openCallModal(callId) {
+  document.getElementById("callModalBg").classList.add("show");
+  document.getElementById("callModalTranscript").textContent = "로딩 중…";
+  document.getElementById("callModalMeta").innerHTML = "";
+  try {
+    const r = await fetch(`/admin/aicc/calls/${callId}`);
+    const c = await r.json();
+    if (!r.ok) throw new Error(c.detail || "load failed");
+    const meta = [
+      ["통화 ID", c.call_id],
+      ["발신/수신", `${c.from_number || '-'} → ${c.to_number || '-'}`],
+      ["시작", fmtTime(c.started_at)],
+      ["종료", fmtTime(c.ended_at)],
+      ["통화 시간", fmtDuration(c.duration_sec)],
+      ["상태", `<span class="status-pill ${c.status}">${statusLabel(c.status)}</span>${c.block_reason ? ' (' + c.block_reason + ')' : ''}`],
+      ["전환 사유", c.transfer_reason ? `${c.transfer_reason} → ${c.transferred_to || ''}` : '-'],
+      ["NLU 실패 횟수", c.failure_count || 0],
+      ["카테고리", c.category || '미분류'],
+      ["고객 유형", c.customer_type || '-'],
+      ["매칭 FAQ", c.matched_faq_no ? `Q${c.matched_faq_no}` : '-'],
+      ["분류 상태", c.classification_status || '-'],
+    ];
+    document.getElementById("callModalMeta").innerHTML = meta.map(([k,v]) => `<div class="k">${k}</div><div>${v}</div>`).join("");
+    document.getElementById("callModalTranscript").textContent = c.transcript_refined || c.transcript || "(트랜스크립트 없음)";
+
+    // SMS 섹션
+    const smsMeta = [
+      ["SMS 상태", smsPill(c.sms_status)],
+      ["발송 시각", fmtTime(c.sms_sent_at)],
+      ["메시지 ID", c.sms_message_id || '-'],
+      ["요약(가운데)", c.sms_summary ? c.sms_summary : '<span style="color:var(--muted)">없음 (no_content_text 사용)</span>'],
+    ];
+    if (c.sms_error) smsMeta.push(["오류", `<span style="color:var(--danger)">${c.sms_error}</span>`]);
+    document.getElementById("callModalSmsMeta").innerHTML = smsMeta.map(([k,v]) => `<div class="k">${k}</div><div>${v}</div>`).join("");
+    const smsBodyWrap = document.getElementById("callModalSmsBodyWrap");
+    if (c.sms_body) {
+      smsBodyWrap.style.display = "block";
+      document.getElementById("callModalSmsBody").textContent = c.sms_body;
+    } else {
+      smsBodyWrap.style.display = "none";
+    }
+
+    const recBtn = document.getElementById("callModalRecording");
+    if (c.recording_url) {
+      recBtn.href = c.recording_url;
+      recBtn.download = `${c.call_id}.wav`;
+      recBtn.style.display = "inline-block";
+    } else {
+      recBtn.style.display = "none";
+    }
+    document.getElementById("callModalReclassify").onclick = async () => {
+      if (!confirm("이 통화를 재분류합니다.")) return;
+      const rr = await fetch(`/admin/aicc/calls/${callId}/reclassify`, {method:"POST"});
+      const j = await rr.json();
+      snack(rr.ok ? `재분류 완료: ${j.category} / ${j.customer_type}` : "재분류 실패");
+      openCallModal(callId);
+      loadCalls(); loadIntegrity(); loadAnalytics();
+    };
+    document.getElementById("callModalResendSms").onclick = async () => {
+      const fromN = c.from_number || '';
+      if (!confirm(`이 통화의 발신자(${fromN})에게 사후 안내 SMS를 다시 발송할까요?`)) return;
+      const btn = document.getElementById("callModalResendSms");
+      btn.disabled = true; btn.textContent = "발송 중…";
+      try {
+        const rr = await fetch(`/admin/aicc/calls/${callId}/resend-sms`, {method:"POST"});
+        const j = await rr.json();
+        if (j.status === "sent") {
+          snack(`SMS 재발송 완료 (mid=${j.message_id || '-'})`);
+        } else {
+          snack(`SMS 발송 결과: ${j.status}${j.reason ? ' - ' + j.reason : ''}${j.error ? ' - ' + j.error : ''}`, j.status !== "sent");
+        }
+        openCallModal(callId);
+        loadCalls();
+      } catch (err) {
+        snack("재발송 실패: " + err.message, true);
+      } finally {
+        btn.disabled = false; btn.textContent = "📨 SMS 재발송";
+      }
+    };
+  } catch (e) {
+    document.getElementById("callModalTranscript").textContent = "오류: " + e.message;
+  }
+}
+
+function closeCallModal() {
+  document.getElementById("callModalBg").classList.remove("show");
+}
+
+// ──────────────────── 수동 SMS 발송 ────────────────────
+
+let manualSmsPreviewed = false;
+
+function updateManualSmsBytes() {
+  const text = document.getElementById("manual_sms_content").value;
+  const bytes = new TextEncoder().encode(text).length;
+  document.getElementById("manual_sms_bytes").textContent = bytes;
+  const isLong = bytes > 90;
+  document.getElementById("manual_sms_type").textContent = isLong ? "LMS (장문)" : "SMS";
+  document.getElementById("manual_sms_long_warn").style.display = isLong ? "inline" : "none";
+  document.getElementById("manual_sms_subject_wrap").style.display = isLong ? "" : "none";
+  invalidateManualSmsPreview();
+}
+
+function invalidateManualSmsPreview() {
+  manualSmsPreviewed = false;
+  document.getElementById("manual_sms_send_btn").disabled = true;
+}
+
+function parseManualSmsTo() {
+  const raw = document.getElementById("manual_sms_to").value;
+  return raw.split(/[,\n;]+/).map(s => s.trim()).filter(Boolean);
+}
+
+async function callManualSms(dryRun) {
+  const numbers = parseManualSmsTo();
+  if (numbers.length === 0) {
+    alert("수신번호를 입력하세요"); return null;
+  }
+  const content = document.getElementById("manual_sms_content").value.trim();
+  if (!content) {
+    alert("본문을 입력하세요"); return null;
+  }
+  const subject = document.getElementById("manual_sms_subject").value.trim() || null;
+  const provider = "ncp";   // NCP SENS 강제 — Solapi/ClawOps 사용 안 함
+
+  const body = {
+    to: numbers.length === 1 ? numbers[0] : numbers,
+    content, subject, provider, dry_run: dryRun,
+  };
+
+  try {
+    const resp = await fetch("/admin/aicc/sms/manual-send", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(body),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.detail || JSON.stringify(data));
+    return data;
+  } catch (e) {
+    alert("요청 실패: " + e.message);
+    return null;
+  }
+}
+
+async function previewManualSms() {
+  const result = await callManualSms(true);
+  if (!result) return;
+  renderManualSmsResult(result, true);
+  manualSmsPreviewed = true;
+  document.getElementById("manual_sms_send_btn").disabled = false;
+}
+
+async function sendManualSms() {
+  if (!manualSmsPreviewed) {
+    alert("먼저 [미리보기]를 눌러 확인하세요"); return;
+  }
+  const numbers = parseManualSmsTo();
+  const c1 = numbers.length === 1
+    ? `${numbers[0]} 에 진짜로 SMS를 발송할까요?`
+    : `${numbers.length}건 대량 발송 — 진짜로 보낼까요?`;
+  if (!confirm(c1)) return;
+  if (!confirm("정말 확실해요? 발송 후 취소 불가합니다.")) return;
+
+  const btn = document.getElementById("manual_sms_send_btn");
+  btn.disabled = true; btn.textContent = "발송 중...";
+
+  const result = await callManualSms(false);
+  btn.textContent = "📨 실제 발송";
+
+  if (!result) {
+    btn.disabled = false; return;
+  }
+  renderManualSmsResult(result, false);
+  invalidateManualSmsPreview();
+}
+
+function renderManualSmsResult(data, isPreview) {
+  const box = document.getElementById("manual_sms_result");
+  box.style.display = "block";
+  let html = "";
+
+  if (data.total !== undefined) {
+    // 대량
+    const c = data.counts || {};
+    const label = isPreview ? "📋 미리보기" : "📨 발송 결과";
+    html += `<div style="font-weight:600; margin-bottom:8px">${label} (${data.total}건)</div>`;
+    html += `<div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:8px">`;
+    if (c.sent) html += `<span style="color:#065f46">✅ 발송 ${c.sent}</span>`;
+    if (c.preview) html += `<span style="color:#1e40af">👁 미리보기 ${c.preview}</span>`;
+    if (c.failed) html += `<span style="color:#991b1b">❌ 실패 ${c.failed}</span>`;
+    if (c.error) html += `<span style="color:#991b1b">⚠ 에러 ${c.error}</span>`;
+    html += `</div>`;
+    html += `<details><summary style="cursor:pointer; color:var(--muted)">상세 (${data.results.length}건 클릭)</summary>`;
+    html += `<pre style="font-size:0.78rem; max-height:300px; overflow:auto; background:#f9fafb; padding:8px; border-radius:6px">${escapeHtml(JSON.stringify(data.results, null, 2))}</pre>`;
+    html += `</details>`;
+  } else {
+    // 단건
+    let label = "";
+    if (data.status === "preview") label = "📋 미리보기 — 발송 안 됨";
+    else if (data.status === "sent") label = "✅ 발송 완료";
+    else if (data.status === "failed") label = "❌ 발송 실패";
+    else label = `⚠ ${data.status || "에러"}`;
+    html += `<div style="font-weight:600; margin-bottom:8px">${label}</div>`;
+    html += `<pre style="font-size:0.78rem; background:#f9fafb; padding:8px; border-radius:6px; overflow:auto">${escapeHtml(JSON.stringify(data, null, 2))}</pre>`;
+  }
+  box.innerHTML = html;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+}
+
+function resetManualSms() {
+  document.getElementById("manual_sms_to").value = "";
+  document.getElementById("manual_sms_content").value = "";
+  document.getElementById("manual_sms_subject").value = "";
+  document.getElementById("manual_sms_provider").value = "";
+  document.getElementById("manual_sms_result").style.display = "none";
+  updateManualSmsBytes();
+}
+
+async function loadManualSmsProviderStatus() {
+  try {
+    const resp = await fetch("/admin/aicc/sms/status");
+    if (!resp.ok) return;
+    const s = await resp.json();
+    const el = document.getElementById("manual_sms_provider_status");
+    if (s.ncp_configured) {
+      el.innerHTML = '✅ <strong>NCP SENS</strong> 설정 완료 · SMS/LMS 발송 가능';
+      el.style.color = '#065f46';
+      el.style.background = '#d1fae5';
+    } else {
+      el.innerHTML = '❌ <strong>NCP SENS 미설정</strong> · NCP_ACCESS_KEY / NCP_SECRET_KEY / NCP_SMS_SERVICE_ID 환경변수 필요';
+      el.style.color = '#991b1b';
+      el.style.background = '#fee2e2';
+    }
+  } catch (e) {
+    document.getElementById("manual_sms_provider_status").textContent = "상태 조회 실패";
+  }
+}
+
+// 초기 셋업
+document.addEventListener("DOMContentLoaded", () => {
+  const c = document.getElementById("manual_sms_content");
+  if (c) c.addEventListener("input", updateManualSmsBytes);
+  const t = document.getElementById("manual_sms_to");
+  if (t) t.addEventListener("input", invalidateManualSmsPreview);
+  updateManualSmsBytes();
+  loadManualSmsProviderStatus();
+
+  // 알림톡 셋업
+  const ac = document.getElementById("alimtalk_content");
+  if (ac) ac.addEventListener("input", updateAlimtalkBytes);
+  const at = document.getElementById("alimtalk_to");
+  if (at) at.addEventListener("input", invalidateAlimtalkPreview);
+  const atpl = document.getElementById("alimtalk_template");
+  if (atpl) atpl.addEventListener("input", invalidateAlimtalkPreview);
+  const apf = document.getElementById("alimtalk_plusfriend");
+  if (apf) apf.addEventListener("input", invalidateAlimtalkPreview);
+  updateAlimtalkBytes();
+});
+
+
+// ──────────────────── 수동 알림톡 발송 ────────────────────
+
+let alimtalkPreviewed = false;
+
+function updateAlimtalkBytes() {
+  const el = document.getElementById("alimtalk_content");
+  if (!el) return;
+  const bytes = new TextEncoder().encode(el.value).length;
+  const bytesEl = document.getElementById("alimtalk_bytes");
+  if (bytesEl) bytesEl.textContent = bytes;
+  invalidateAlimtalkPreview();
+}
+
+function invalidateAlimtalkPreview() {
+  alimtalkPreviewed = false;
+  const btn = document.getElementById("alimtalk_send_btn");
+  if (btn) btn.disabled = true;
+}
+
+function parseAlimtalkTo() {
+  const raw = document.getElementById("alimtalk_to").value;
+  return raw.split(/[,\n;]+/).map(s => s.trim()).filter(Boolean);
+}
+
+async function callManualAlimtalk(dryRun) {
+  const numbers = parseAlimtalkTo();
+  if (numbers.length === 0) { alert("수신번호를 입력하세요"); return null; }
+  const content = document.getElementById("alimtalk_content").value.trim();
+  if (!content) { alert("본문을 입력하세요"); return null; }
+  const template_code = document.getElementById("alimtalk_template").value.trim();
+  if (!template_code) { alert("템플릿 코드를 입력하세요"); return null; }
+
+  const plus_friend_id = document.getElementById("alimtalk_plusfriend").value.trim() || null;
+  const title = document.getElementById("alimtalk_title").value.trim() || null;
+  const use_sms_failover = document.getElementById("alimtalk_failover").checked;
+
+  const body = {
+    to: numbers.length === 1 ? numbers[0] : numbers,
+    content, template_code, plus_friend_id, title, use_sms_failover,
+    dry_run: dryRun,
+  };
+
+  try {
+    const resp = await fetch("/admin/aicc/alimtalk/manual-send", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(body),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.detail || JSON.stringify(data));
+    return data;
+  } catch (e) {
+    alert("요청 실패: " + e.message);
+    return null;
+  }
+}
+
+async function previewManualAlimtalk() {
+  const result = await callManualAlimtalk(true);
+  if (!result) return;
+  renderAlimtalkResult(result, true);
+  alimtalkPreviewed = true;
+  document.getElementById("alimtalk_send_btn").disabled = false;
+}
+
+async function sendManualAlimtalk() {
+  if (!alimtalkPreviewed) { alert("먼저 [미리보기]를 눌러 확인하세요"); return; }
+  const numbers = parseAlimtalkTo();
+  const c1 = numbers.length === 1
+    ? `${numbers[0]} 에 진짜로 알림톡을 발송할까요?`
+    : `${numbers.length}건 알림톡 대량 발송 — 진짜로 보낼까요?`;
+  if (!confirm(c1)) return;
+  if (!confirm("정말 확실해요? 발송 후 취소 불가합니다.")) return;
+
+  const btn = document.getElementById("alimtalk_send_btn");
+  btn.disabled = true; btn.textContent = "발송 중...";
+  const result = await callManualAlimtalk(false);
+  btn.textContent = "💬 실제 발송";
+  if (!result) { btn.disabled = false; return; }
+  renderAlimtalkResult(result, false);
+  invalidateAlimtalkPreview();
+}
+
+function renderAlimtalkResult(data, isPreview) {
+  const box = document.getElementById("alimtalk_result");
+  box.style.display = "block";
+  let html = "";
+  if (data.total !== undefined) {
+    const c = data.counts || {};
+    const label = isPreview ? "📋 미리보기" : "💬 발송 결과";
+    html += `<div style="font-weight:600; margin-bottom:8px">${label} (${data.total}건)</div>`;
+    html += `<div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:8px">`;
+    if (c.sent) html += `<span style="color:#065f46">✅ 발송 ${c.sent}</span>`;
+    if (c.preview) html += `<span style="color:#1e40af">👁 미리보기 ${c.preview}</span>`;
+    if (c.failed) html += `<span style="color:#991b1b">❌ 실패 ${c.failed}</span>`;
+    if (c.error) html += `<span style="color:#991b1b">⚠ 에러 ${c.error}</span>`;
+    html += `</div>`;
+    html += `<details><summary style="cursor:pointer; color:var(--muted)">상세 (${data.results.length}건)</summary>`;
+    html += `<pre style="font-size:0.78rem; max-height:300px; overflow:auto; background:#f9fafb; padding:8px; border-radius:6px">${escapeHtml(JSON.stringify(data.results, null, 2))}</pre>`;
+    html += `</details>`;
+  } else {
+    let label = "";
+    if (data.status === "preview") label = "📋 미리보기 — 발송 안 됨";
+    else if (data.status === "sent") label = "✅ 알림톡 발송 완료";
+    else if (data.status === "failed") label = "❌ 알림톡 발송 실패";
+    else label = `⚠ ${data.status || "에러"}`;
+    html += `<div style="font-weight:600; margin-bottom:8px">${label}</div>`;
+    html += `<pre style="font-size:0.78rem; background:#f9fafb; padding:8px; border-radius:6px; overflow:auto">${escapeHtml(JSON.stringify(data, null, 2))}</pre>`;
+  }
+  box.innerHTML = html;
+}
+
+function resetManualAlimtalk() {
+  document.getElementById("alimtalk_to").value = "";
+  document.getElementById("alimtalk_content").value = "";
+  document.getElementById("alimtalk_plusfriend").value = "";
+  document.getElementById("alimtalk_template").value = "";
+  document.getElementById("alimtalk_title").value = "";
+  document.getElementById("alimtalk_failover").checked = false;
+  document.getElementById("alimtalk_result").style.display = "none";
+  updateAlimtalkBytes();
+}
+
+
+// ──────────────────── 콜백 큐 ────────────────────
+
+const PRIORITY_LABELS = {1: "낮음", 2: "낮음+", 3: "보통", 4: "높음", 5: "매우긴급"};
+const PRIORITY_COLORS = {1: "#9ca3af", 2: "#a3a3a3", 3: "#3b82f6", 4: "#f59e0b", 5: "#dc2626"};
+const STATUS_LABELS = {
+  pending: "⏳ 대기",
+  in_progress: "📞 진행중",
+  done: "✅ 완료",
+  failed: "❌ 실패",
+  cancelled: "🚫 취소",
+};
+const SOURCE_LABELS = {
+  auto_blocked: "자동·차단",
+  auto_failed: "자동·실패",
+  auto_short_call: "자동·짧은통화",
+  manual: "수동 추가",
+};
+
+async function loadCallbackStats() {
+  try {
+    const r = await fetch("/admin/aicc/callbacks/stats");
+    if (!r.ok) return;
+    const data = await r.json();
+    const s = data.stats || {};
+    const kpiRow = document.getElementById("callbackKpiRow");
+    kpiRow.innerHTML = `
+      <div class="kpi"><div class="kpi-label">대기</div><div class="kpi-value">${s.pending || 0}</div></div>
+      <div class="kpi"><div class="kpi-label">진행중</div><div class="kpi-value">${s.in_progress || 0}</div></div>
+      <div class="kpi"><div class="kpi-label">완료</div><div class="kpi-value">${s.done || 0}</div></div>
+      <div class="kpi"><div class="kpi-label">실패</div><div class="kpi-value">${s.failed || 0}</div></div>
+      <div class="kpi"><div class="kpi-label">취소</div><div class="kpi-value">${s.cancelled || 0}</div></div>
+    `;
+    // 헤더 배지 (대기+진행중)
+    const active = (s.pending || 0) + (s.in_progress || 0);
+    const badge = document.getElementById("callbackBadge");
+    if (badge) {
+      if (active > 0) {
+        badge.textContent = active;
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+    }
+    // dispatcher 상태 안내
+    if (!data.dispatcher_ready) {
+      snack("⚠️ ClawOps agent 초기화 안 됨 — 즉시 발신 불가", true);
+    }
+  } catch (e) { console.warn("callback stats 실패", e); }
+}
+
+let _cbLoadTimer = null;
+function loadCallbacksDebounced() {
+  clearTimeout(_cbLoadTimer);
+  _cbLoadTimer = setTimeout(loadCallbacks, 300);
+}
+
+async function loadCallbacks() {
+  const statusSel = document.getElementById("cb_filter_status").value;
+  const phone = (document.getElementById("cb_filter_phone").value || "").replace(/-/g, "").trim();
+  const params = new URLSearchParams();
+  if (statusSel === "active") params.set("active_only", "true");
+  else if (statusSel) params.set("status", statusSel);
+  if (phone) params.set("from_number", phone);
+  params.set("limit", "100");
+
+  const body = document.getElementById("cb_table_body");
+  body.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--muted)">불러오는 중...</td></tr>`;
+  try {
+    const r = await fetch("/admin/aicc/callbacks?" + params.toString());
+    const data = await r.json();
+    if (!data.items || data.items.length === 0) {
+      body.innerHTML = "";
+      document.getElementById("cb_empty").style.display = "block";
+      return;
+    }
+    document.getElementById("cb_empty").style.display = "none";
+    body.innerHTML = data.items.map(renderCallbackRow).join("");
+  } catch (e) {
+    body.innerHTML = `<tr><td colspan="7" style="color:var(--danger)">조회 실패: ${e.message}</td></tr>`;
+  }
+}
+
+function renderCallbackRow(cb) {
+  const pColor = PRIORITY_COLORS[cb.priority] || "#9ca3af";
+  const pLabel = PRIORITY_LABELS[cb.priority] || cb.priority;
+  const sLabel = STATUS_LABELS[cb.status] || cb.status;
+  const srcLabel = SOURCE_LABELS[cb.source] || cb.source;
+  const created = (cb.created_at || "").replace("T", " ").substring(0, 16);
+  const customer = cb.customer_name ? `${escapeHtml(cb.customer_name)} (${cb.from_number})` : cb.from_number;
+  const canCall = cb.status === "pending" || cb.status === "failed";
+  const canCancel = cb.status !== "done" && cb.status !== "cancelled";
+
+  return `<tr>
+    <td><span style="display:inline-block; width:28px; height:28px; line-height:28px; text-align:center; border-radius:50%; background:${pColor}; color:#fff; font-weight:700;" title="${pLabel}">${cb.priority}</span></td>
+    <td><strong>${escapeHtml(customer)}</strong></td>
+    <td>${escapeHtml(cb.reason || "")} <span style="color:var(--muted); font-size:0.78rem">[${srcLabel}]</span></td>
+    <td>${sLabel}</td>
+    <td>${cb.retry_count} / ${cb.max_retries}</td>
+    <td style="font-size:0.8rem; color:var(--muted)">${created}</td>
+    <td>
+      ${canCall ? `<button class="ghost" style="padding:4px 10px; font-size:0.8rem" onclick="callNow(${cb.id})">📞 발신</button>` : ''}
+      <button class="ghost" style="padding:4px 8px; font-size:0.8rem" onclick="changePriorityPrompt(${cb.id}, ${cb.priority})">⚙</button>
+      ${canCancel ? `<button class="ghost" style="padding:4px 10px; font-size:0.8rem; color:#dc2626" onclick="cancelCb(${cb.id})">취소</button>` : ''}
+    </td>
+  </tr>`;
+}
+
+async function createCallback() {
+  const phone = (document.getElementById("cb_new_phone").value || "").trim();
+  if (!phone) { alert("고객 번호를 입력하세요"); return; }
+  const body = {
+    from_number: phone,
+    customer_name: document.getElementById("cb_new_name").value.trim() || null,
+    priority: parseInt(document.getElementById("cb_new_priority").value, 10),
+    reason: document.getElementById("cb_new_reason").value.trim() || "관리자 수동 추가",
+  };
+  try {
+    const r = await fetch("/admin/aicc/callbacks", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(body),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || JSON.stringify(data));
+    snack(`✅ 콜백 #${data.id} 추가됨`);
+    document.getElementById("cb_new_phone").value = "";
+    document.getElementById("cb_new_name").value = "";
+    document.getElementById("cb_new_reason").value = "";
+    loadCallbackStats();
+    loadCallbacks();
+  } catch (e) {
+    snack("추가 실패: " + e.message, true);
+  }
+}
+
+async function callNow(cbId) {
+  if (!confirm(`#${cbId} 콜백을 지금 발신할까요?`)) return;
+  try {
+    const r = await fetch(`/admin/aicc/callbacks/${cbId}/call-now`, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({}),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || JSON.stringify(data));
+    const dispatch = data.dispatch || {};
+    if (dispatch.status === "initiated") {
+      snack(`📞 발신 시작: call_id=${dispatch.call_id}`);
+    } else {
+      snack(`발신 실패: ${dispatch.reason || "unknown"}`, true);
+    }
+    loadCallbackStats();
+    loadCallbacks();
+  } catch (e) {
+    snack("발신 실패: " + e.message, true);
+  }
+}
+
+async function cancelCb(cbId) {
+  const reason = prompt("취소 사유 (선택)");
+  if (reason === null) return;
+  try {
+    const url = `/admin/aicc/callbacks/${cbId}` + (reason ? `?reason=${encodeURIComponent(reason)}` : "");
+    const r = await fetch(url, { method: "DELETE" });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    snack(`🚫 #${cbId} 취소됨`);
+    loadCallbackStats();
+    loadCallbacks();
+  } catch (e) {
+    snack("취소 실패: " + e.message, true);
+  }
+}
+
+async function changePriorityPrompt(cbId, current) {
+  const v = prompt(`우선순위 변경 (현재: ${current}, 1~5 입력)`, current);
+  if (v === null) return;
+  const p = parseInt(v, 10);
+  if (isNaN(p) || p < 1 || p > 5) { alert("1~5 사이 숫자"); return; }
+  try {
+    const r = await fetch(`/admin/aicc/callbacks/${cbId}`, {
+      method: "PATCH",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({priority: p}),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    snack(`⚙ 우선순위 → ${p}`);
+    loadCallbacks();
+  } catch (e) {
+    snack("변경 실패: " + e.message, true);
+  }
+}
+
+// 페이지 로드 시 KPI 즉시 (탭 안 들어가도 배지 보이게)
+document.addEventListener("DOMContentLoaded", () => {
+  loadCallbackStats();
+  setInterval(loadCallbackStats, 30000);  // 30초마다 KPI/배지 갱신
+});
+</script>
+</body>
+</html>

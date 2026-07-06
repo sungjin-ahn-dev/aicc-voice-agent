@@ -1,0 +1,44 @@
+[project]
+name = "aicc-server"
+version = "0.1.0"
+description = "AICC (AI Contact Center) 전화 시스템 — CLAW OPS + Gemini Live 음성 상담 + CS 관리 대시보드"
+readme = "README.md"
+requires-python = ">=3.10,<4.0"
+
+dependencies = [
+    # ── 전화/음성 ──
+    "clawops==0.21.1",            # ClawOps 전화(telephony) SDK ⚠️ 설치 가능 여부 확인 필요
+    "google-genai>=0.3.0",        # Gemini Live (트랜스크립트 정제/분류)
+
+    # ── AI 분류 ──
+    "claude-agent-sdk>=0.1.4",    # call_classifier, phone_tools
+
+    # ── 웹 서버 ──
+    "fastapi>=0.119.0",
+    "uvicorn>=0.38.0",
+    "websockets>=15.0.1",
+    "python-multipart>=0.0.20",
+    "httpx>=0.28.1",
+
+    # ── Slack ──
+    "slack-sdk>=3.27.0",          # 통화 요약/녹음 전송
+
+    # ── 설정/데이터 ──
+    "pydantic>=2.11.7",
+    "pydantic-settings>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "openpyxl>=3.1.5",            # AICC 시나리오 xlsx 로드
+]
+
+[tool.uv]
+# clawops 가 사설 인덱스에 있다면 아래처럼 index 추가 필요:
+# [[tool.uv.index]]
+# name = "private"
+# url = "https://..."
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]

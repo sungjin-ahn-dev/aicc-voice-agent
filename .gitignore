@@ -1,0 +1,21 @@
+# 시크릿
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.uv/
+
+# 데이터 (DB, 녹음)
+*.db
+*.sqlite3
+aicc_recordings/
+data/
+
+# OS / 에디터
+.DS_Store
+.idea/
+.vscode/

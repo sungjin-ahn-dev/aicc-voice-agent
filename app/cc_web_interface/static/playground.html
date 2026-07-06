@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AICC Playground — 전화 실험실</title>
+<style>
+  :root{
+    --bg:#0f1419; --panel:#1a2027; --panel2:#222b35; --border:#2d3742;
+    --text:#dce3ea; --muted:#8b97a3; --accent:#4aa3ff;
+    --green:#34c759; --orange:#ff9f0a; --red:#ff5b5b; --code:#11161c;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:"Segoe UI","Malgun Gothic","맑은 고딕",system-ui,sans-serif;line-height:1.6}
+  header{background:#0c1116;border-bottom:1px solid var(--border);padding:16px 28px;
+    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  header h1{font-size:20px;margin:0;color:#fff}
+  header .sub{color:var(--muted);font-size:13px}
+  header a{color:var(--accent);text-decoration:none;font-size:14px;border:1px solid var(--border);
+    padding:7px 14px;border-radius:8px}
+  header a:hover{background:var(--panel)}
+  main{max-width:1000px;margin:0 auto;padding:26px 22px}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin:18px 0}
+  .card h2{font-size:17px;margin:0 0 14px;color:#fff;display:flex;align-items:center;gap:8px}
+  .row{display:flex;gap:14px;flex-wrap:wrap}
+  .row > div{flex:1;min-width:220px}
+  label{display:block;font-size:13px;color:var(--muted);margin:10px 0 5px}
+  input,textarea{width:100%;background:var(--code);border:1px solid var(--border);border-radius:9px;
+    color:var(--text);padding:11px 13px;font-size:14px;font-family:inherit}
+  input:focus,textarea:focus{outline:none;border-color:var(--accent)}
+  textarea{resize:vertical;min-height:74px}
+  button{background:var(--accent);color:#fff;border:none;border-radius:9px;padding:12px 22px;
+    font-size:15px;font-weight:600;cursor:pointer;margin-top:16px}
+  button:hover{filter:brightness(1.1)}
+  button:disabled{background:#3a4654;cursor:not-allowed;filter:none}
+  button.ghost{background:transparent;border:1px solid var(--border);color:var(--muted);
+    font-size:13px;padding:7px 14px;font-weight:500;margin:0}
+  button.ghost:hover{background:var(--panel2);color:var(--text)}
+  .badges{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+  .badge{display:flex;align-items:center;gap:7px;background:var(--code);border:1px solid var(--border);
+    border-radius:20px;padding:6px 14px;font-size:13px}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--muted)}
+  .dot.on{background:var(--green);box-shadow:0 0 7px var(--green)}
+  .dot.off{background:var(--red)}
+  .diag{font-size:13.5px;color:var(--muted);background:var(--code);border-left:3px solid var(--accent);
+    border-radius:0 8px 8px 0;padding:10px 14px;margin-top:6px}
+  .result{margin-top:16px;border-radius:10px;padding:14px 16px;font-size:14px;display:none}
+  .result.ok{display:block;background:rgba(52,199,89,.12);border:1px solid rgba(52,199,89,.4);color:#bfe9c8}
+  .result.err{display:block;background:rgba(255,91,91,.12);border:1px solid rgba(255,91,91,.4);color:#f3c2c2}
+  .result.info{display:block;background:rgba(74,163,255,.1);border:1px solid rgba(74,163,255,.35);color:#bcd9ff}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+  th,td{border-bottom:1px solid var(--border);padding:9px 10px;text-align:left}
+  th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+  td .st{font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px}
+  .st.completed{background:rgba(52,199,89,.15);color:var(--green)}
+  .st.in_progress{background:rgba(74,163,255,.15);color:var(--accent)}
+  .st.transferred{background:rgba(124,92,255,.15);color:#a98bff}
+  .st.blocked{background:rgba(255,159,10,.15);color:var(--orange)}
+  .st.failed{background:rgba(255,91,91,.15);color:var(--red)}
+  .mono{font-family:Consolas,monospace;font-size:12px;color:var(--muted)}
+  .num{font-family:Consolas,monospace;font-size:17px;color:#fff;background:var(--code);
+    padding:8px 16px;border-radius:9px;display:inline-block;letter-spacing:1px}
+  .hint{font-size:12.5px;color:var(--muted);margin-top:6px}
+  .flex-between{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+  .warn-box{background:rgba(255,159,10,.08);border:1px solid rgba(255,159,10,.3);border-radius:10px;
+    padding:12px 16px;font-size:13px;color:#f0cf9a;margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>📞 AICC Playground</h1>
+    <div class="sub">로컬 서버에서 전화 발신/수신을 실험하는 테스트 페이지</div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <a href="/admin/aicc">← 관리 대시보드</a>
+    <a href="/daemon/aicc-status" target="_blank">상태 JSON</a>
+  </div>
+</header>
+
+<main>
+
+  <!-- 상태 -->
+  <div class="card">
+    <div class="flex-between">
+      <h2>🔌 서버 상태</h2>
+      <button class="ghost" onclick="loadStatus()">새로고침</button>
+    </div>
+    <div class="badges" id="badges">
+      <span class="badge"><span class="dot"></span> 불러오는 중…</span>
+    </div>
+    <div class="diag" id="diag">상태 확인 중…</div>
+  </div>
+
+  <!-- 아웃바운드 발신 테스트 -->
+  <div class="card">
+    <h2>📤 발신 테스트 (아웃바운드)</h2>
+    <p class="hint">입력한 휴대폰 번호로 AI가 전화를 겁니다. 통화가 끝나면 녹음·요약·분류가 대시보드에 기록됩니다.
+      <b>키(CLAWOPS·GOOGLE)가 있어야 실제로 걸립니다.</b></p>
+    <div class="row">
+      <div>
+        <label>전화번호 (휴대폰)</label>
+        <input id="phone" placeholder="01012345678" autocomplete="off">
+      </div>
+      <div>
+        <label>상대방 이름 (선택)</label>
+        <input id="name" placeholder="홍길동" autocomplete="off">
+      </div>
+    </div>
+    <label>전화 목적</label>
+    <input id="purpose" placeholder="예: 마음케어 재처방 안내 / 만족도 조사" autocomplete="off">
+    <label>AI가 전달할 핵심 메시지</label>
+    <textarea id="message" placeholder="예: 처방 기간이 7일 후 만료됩니다. 재처방을 위해 병원 방문을 부탁드립니다."></textarea>
+    <button id="callBtn" onclick="makeCall()">📞 발신하기</button>
+    <div class="result" id="callResult"></div>
+    <div class="warn-box">⚠️ 실제 발신 테스트입니다 — 입력한 번호로 진짜 전화가 갑니다. 본인 번호로 먼저 테스트하세요.
+      통화 종료 시 설정에 따라 안내 SMS가 발송될 수 있습니다.</div>
+  </div>
+
+  <!-- 인바운드 안내 -->
+  <div class="card">
+    <h2>📥 수신 테스트 (인바운드)</h2>
+    <p class="hint">아래 070 번호로 전화를 걸면 AI가 받아 한국어로 상담합니다. (ClawOps 인바운드 라우팅이 이 번호로 설정돼 있어야 합니다.)</p>
+    <div class="num" id="fromNumber">07012345678</div>
+    <p class="hint">운영시간·무음 종료·상담원 전환 등은 <a href="/admin/aicc" style="color:var(--accent)">대시보드</a>의 설정을 따릅니다.</p>
+  </div>
+
+  <!-- 최근 통화 -->
+  <div class="card">
+    <div class="flex-between">
+      <h2>🕑 최근 통화</h2>
+      <button class="ghost" onclick="loadRecent()">새로고침</button>
+    </div>
+    <table>
+      <thead><tr><th>시각</th><th>방향</th><th>번호</th><th>상태</th><th>분류</th><th>길이</th></tr></thead>
+      <tbody id="recentBody"><tr><td colspan="6" class="mono">불러오는 중…</td></tr></tbody>
+    </table>
+  </div>
+
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+
+async function loadStatus(){
+  try{
+    const r = await fetch('/playground/status');
+    const s = await r.json();
+    $('fromNumber').textContent = s.from_number || '07012345678';
+    const mk = (label, on) =>
+      `<span class="badge"><span class="dot ${on?'on':'off'}"></span> ${label}</span>`;
+    $('badges').innerHTML =
+      mk('전화 에이전트', s.agent_ready) +
+      mk('CLAW OPS 키', s.clawops_configured) +
+      mk('Gemini 키', s.gemini_configured) +
+      mk('Slack', s.slack_configured) +
+      `<span class="badge"><span class="dot ${s.recent_calls_today>0?'on':''}"></span> 오늘 ${s.recent_calls_today}건</span>`;
+    $('diag').textContent = s.diagnosis || '';
+    $('callBtn').disabled = false;
+  }catch(e){
+    $('badges').innerHTML = '<span class="badge"><span class="dot off"></span> 서버 응답 없음</span>';
+    $('diag').textContent = '서버에 연결할 수 없습니다: ' + e;
+  }
+}
+
+async function makeCall(){
+  const phone = $('phone').value.trim();
+  if(!phone){ showResult('err','전화번호를 입력하세요.'); return; }
+  const btn = $('callBtn');
+  btn.disabled = true; btn.textContent = '발신 중…';
+  showResult('info','발신 요청을 보냈습니다…');
+  try{
+    const r = await fetch('/playground/call', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        phone, name:$('name').value.trim(),
+        purpose:$('purpose').value.trim(), message:$('message').value.trim()
+      })
+    });
+    const d = await r.json();
+    if(d.status === 'initiated'){
+      showResult('ok', `✅ ${d.message}  (call_id: ${d.call_id||'-'})`);
+      setTimeout(loadRecent, 1500);
+    }else{
+      let extra = d.missing_keys && d.missing_keys.length ? `\n필요한 키: ${d.missing_keys.join(', ')}` : '';
+      showResult('err', `❌ ${d.message || d.detail || JSON.stringify(d)}${extra}`);
+    }
+  }catch(e){
+    showResult('err','요청 실패: ' + e);
+  }finally{
+    btn.disabled = false; btn.textContent = '📞 발신하기';
+  }
+}
+
+function showResult(kind, text){
+  const el = $('callResult');
+  el.className = 'result ' + kind;
+  el.textContent = text;
+}
+
+function fmtTime(iso){
+  if(!iso) return '-';
+  try{ const d = new Date(iso); return d.toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}); }
+  catch(e){ return iso.slice(0,16); }
+}
+function fmtDur(s){ if(!s) return '-'; const m=Math.floor(s/60), x=s%60; return m?`${m}분 ${x}초`:`${x}초`; }
+
+async function loadRecent(){
+  try{
+    const r = await fetch('/playground/recent?limit=10');
+    const d = await r.json();
+    if(!d.calls || !d.calls.length){
+      $('recentBody').innerHTML = '<tr><td colspan="6" class="mono">아직 통화 기록이 없습니다.</td></tr>';
+      return;
+    }
+    $('recentBody').innerHTML = d.calls.map(c => `
+      <tr>
+        <td class="mono">${fmtTime(c.started_at)}</td>
+        <td>${c.direction==='outbound'?'📤 발신':'📥 수신'}</td>
+        <td class="mono">${c.from_number||c.to_number||'-'}</td>
+        <td><span class="st ${c.status||''}">${c.status||'-'}</span></td>
+        <td>${c.category||'-'}${c.customer_type?` · ${c.customer_type}`:''}</td>
+        <td class="mono">${fmtDur(c.duration_sec)}</td>
+      </tr>`).join('');
+  }catch(e){
+    $('recentBody').innerHTML = '<tr><td colspan="6" class="mono">불러오기 실패: '+e+'</td></tr>';
+  }
+}
+
+// 초기 로드 + 주기적 갱신
+loadStatus(); loadRecent();
+setInterval(loadStatus, 8000);
+setInterval(loadRecent, 10000);
+</script>
+</body>
+</html>
