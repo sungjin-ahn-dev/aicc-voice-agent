@@ -7,7 +7,8 @@ requires-python = ">=3.10,<4.0"
 
 dependencies = [
     # ── 전화/음성 ──
-    "clawops==0.21.1",            # ClawOps 전화(telephony) SDK ⚠️ 설치 가능 여부 확인 필요
+    # ClawOps 전화(telephony) SDK는 공개 인덱스에 없는 사설 벤더 SDK라 기본 의존성에서 제외했습니다.
+    # 실제 070 전화 송수신에만 필요하며, 계약된 인덱스에서 `clawops==0.21.1` 을 별도 설치하세요.
     "google-genai>=0.3.0",        # Gemini Live (트랜스크립트 정제/분류)
 
     # ── AI 분류 ──
