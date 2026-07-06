@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/img/banner.png" alt="AICC 음성 상담 서버">
+</p>
+
 <div align="center">
 
 # 📞 AICC — AI 콜센터 전화 서버
@@ -127,3 +131,17 @@ aicc-voice-agent/
 
 <sub>이 저장소는 포트폴리오 열람용입니다. 실무 프로젝트에서 고객사·운영 정보를 제거하고
 가상 브랜드와 목업 시나리오로 재구성했습니다.</sub>
+
+---
+
+<!-- portfolio-footer -->
+
+### 🗂️ 포트폴리오
+
+이 저장소는 포트폴리오의 일부입니다. → **[전체 프로젝트 보기](https://github.com/asj000221-debug)**
+
+- [MOCO — AI Coworker Platform](https://github.com/asj000221-debug/moco-ai-coworker)
+- [근감소증 예측 멀티모달 ML](https://github.com/asj000221-debug/sarcopenia-multimodal-ml)
+- [DTx 인지훈련 난이도 조정 봇](https://github.com/asj000221-debug/dtx-adaptive-training-bot)
+- [한국어 난독증 읽기평가 엔진](https://github.com/asj000221-debug/korean-reading-assessment)
+- **AICC 음성 상담 서버** ← 현재 저장소
