@@ -35,32 +35,9 @@
 
 ## 2. 통화 흐름
 
-```mermaid
-sequenceDiagram
-    participant C as 👤 고객
-    participant T as ClawOps<br/>(telephony)
-    participant A as aicc_runtime<br/>(에이전트)
-    participant G as Gemini Live
-    participant P as 통화 후 파이프라인
-
-    C->>T: 070 전화 발신
-    T->>A: webhook + 미디어 스트림 (WS)
-    A->>A: 운영시간/휴무 판정
-    alt 영업시간 외
-        A->>C: 안내 멘트 (TTS) 후 종료
-        A->>A: 콜백 큐 적재 → 영업 재개 시 자동 발신
-    else 영업 중
-        A->>G: 오디오 스트림 + 시나리오 프롬프트(FAQ)
-        G->>C: 실시간 한국어 음성 응답
-        loop 대화
-            C->>G: 질문 (무음 시 G02→G03→hangup)
-            G->>C: FAQ 기반 답변 (전환 키워드 → 상담원 연결)
-        end
-    end
-    T->>P: 통화 종료 + 녹음
-    P->>P: 트랜스크립트 정제·분류 (Gemini)
-    P->>P: Slack 요약 전송 + 안내 SMS 발송
-```
+<p align="center">
+  <img src="docs/img/pipeline.png" width="920" alt="AICC 통화 처리 흐름">
+</p>
 
 ## 3. 빠른 시작
 
