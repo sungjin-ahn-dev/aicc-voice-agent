@@ -11,7 +11,7 @@
 ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-async-009688?logo=fastapi&logoColor=white)
 ![Gemini](https://img.shields.io/badge/Gemini%20Live-realtime%20voice-4285F4?logo=googlegemini&logoColor=white)
-![Claude](https://img.shields.io/badge/Claude-call%20classifier-D97757)
+![Claude](https://img.shields.io/badge/Claude-agent%20SDK-D97757)
 
 </div>
 
