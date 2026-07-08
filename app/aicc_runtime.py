@@ -560,7 +560,7 @@ async def start_aicc_agent() -> "asyncio.Task | None":
                 logging.error(f"[AICC] 자동 전환 실패: {transfer_err}")
 
         clawops_task = asyncio.create_task(aicc_agent.serve())
-        logging.info(f"[AICC] 🚀 CLAW OPS Agent started — {AICC_FROM_NUMBER} 대기 중")
+        logging.info(f"[AICC] CLAW OPS Agent started — {AICC_FROM_NUMBER} 대기 중")
         return clawops_task
     except Exception as e:
         logging.warning(f"[AICC] CLAW OPS Agent 시작 실패 (무시): {e}")
